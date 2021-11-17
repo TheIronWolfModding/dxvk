@@ -22,15 +22,18 @@ struct D3D9_TEXTURE_VR_DESC {
 
 MIDL_INTERFACE("7e272b32-a49c-46c7-b1a4-ef52936bec87")
 IDirect3DVR9 : public IUnknown {
-
-public:
-
   virtual HRESULT STDMETHODCALLTYPE GetVRDesc(IDirect3DSurface9* pSurface, D3D9_TEXTURE_VR_DESC* pDesc) = 0;
 
   virtual HRESULT STDMETHODCALLTYPE Presubmit(IDirect3DSurface9* pSurface) = 0;
 
   virtual HRESULT STDMETHODCALLTYPE Postsubmit(IDirect3DSurface9* pSurface) = 0;
-
 };
 
+#ifdef _MSC_VER
 struct __declspec(uuid("7e272b32-a49c-46c7-b1a4-ef52936bec87")) IDirect3DVR9;
+#else
+__CRT_UUID_DECL(IDirect3DVR9,0x7e272b32,0xa49c,0x46c7,0xb1,0xa4,0xef,0x52,0x93,0x6b,0xec,0x87);
+#endif
+
+HRESULT __stdcall Direct3DCreateVRImpl(IDirect3DDevice9* pDevice,
+                                       IDirect3DVR9** pInterface);

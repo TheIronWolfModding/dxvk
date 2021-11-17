@@ -2,6 +2,7 @@
 
 #include "d3d9_interface.h"
 #include "d3d9_shader_validator.h"
+#include "d3d9_vr.h"
 
 class D3DFE_PROCESSVERTICES;
 using PSGPERRORID = UINT;
@@ -31,6 +32,11 @@ extern "C" {
 
   DLLEXPORT HRESULT __stdcall Direct3DCreate9Ex(UINT nSDKVersion, IDirect3D9Ex** ppDirect3D9Ex) {
     return dxvk::CreateD3D9(true, ppDirect3D9Ex);
+  }
+
+  DLLEXPORT HRESULT __stdcall Direct3DCreateVR(IDirect3DDevice9* pDevice, IDirect3DVR9** pInterface)
+  {
+    return Direct3DCreateVRImpl(pDevice, pInterface);
   }
 
   DLLEXPORT int __stdcall D3DPERF_BeginEvent(D3DCOLOR col, LPCWSTR wszName) {

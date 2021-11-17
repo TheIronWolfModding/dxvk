@@ -3,6 +3,8 @@
 #include "d3d9_include.h"
 #include "d3d9_surface.h"
 
+#include "d3d9_device.h"
+
 namespace dxvk {
 
   class D3D9VR final : public ComObjectClamp<IDirect3DVR9> {
@@ -119,7 +121,7 @@ namespace dxvk {
 
 }
 
-HRESULT __stdcall Direct3DCreateVR(IDirect3DDevice9* pDevice, IDirect3DVR9** pInterface) {
+HRESULT __stdcall Direct3DCreateVRImpl(IDirect3DDevice9* pDevice, IDirect3DVR9** pInterface) {
   if (pInterface == nullptr)
     return D3DERR_INVALIDCALL;
 
