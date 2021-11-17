@@ -38,7 +38,7 @@ d3d9_src = [
   'd3d9_names.cpp',
   'd3d9_swvp_emu.cpp',
   'd3d9_format_helpers.cpp',
-  'd3d9_hud.cpp'
+  'd3d9_hud.cpp',
   'd3d9_vr.cpp'
 ]
 
