@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../dxvk/dxvk_include.h"
+
 #include <d3d9.h>
 
 #define VK_USE_PLATFORM_WIN32_KHR 1
