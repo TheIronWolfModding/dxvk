@@ -354,7 +354,11 @@ namespace dxvk {
     std::vector<HashEntry> m_hashMap;
 
     static size_t computeHash(K key) {
-      return size_t(reinterpret_cast<uint64_t>(key));
+#if defined(_MSC_VER) && !defined(_WIN64)
+    return size_t(static_cast<uint64_t>(key));
+#else
+    return size_t(reinterpret_cast<uint64_t>(key));
+#endif
     }
 
     size_t computeIndex(K key) const {
