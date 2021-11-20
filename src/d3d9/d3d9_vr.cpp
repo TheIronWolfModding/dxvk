@@ -1,3 +1,5 @@
+#include "../dxvk/dxvk_include.h"
+
 #include "d3d9_vr.h"
 
 #include "d3d9_include.h"
@@ -65,12 +67,12 @@ namespace dxvk {
     HRESULT STDMETHODCALLTYPE Presubmit(IDirect3DSurface9* pSurface) {
       if (unlikely(pSurface == nullptr))
         return D3DERR_INVALIDCALL;
-
+      
       auto* tex = static_cast<D3D9Surface*>(pSurface)->GetCommonTexture();
       const auto& image = tex->GetImage();
 
       m_lock = m_device->LockDevice();
-
+      
       VkImageSubresourceRange subresources = {
         VK_IMAGE_ASPECT_COLOR_BIT,
         0, image->info().mipLevels,
@@ -81,7 +83,7 @@ namespace dxvk {
         tex, &subresources,
         image->info().layout,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
+      
       m_device->Flush();
       m_device->SynchronizeCsThread();
 
@@ -105,7 +107,7 @@ namespace dxvk {
         tex, &subresources,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         image->info().layout);
-
+      
       m_lock = D3D9DeviceLock();
 
       return D3D_OK;
@@ -114,9 +116,7 @@ namespace dxvk {
   private:
 
     D3D9DeviceEx* m_device;
-
     D3D9DeviceLock m_lock;
-
   };
 
 }
