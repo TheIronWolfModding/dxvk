@@ -84,13 +84,19 @@ namespace dxvk {
         image->info().layout,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
       
-      m_device->Flush();
-      m_device->SynchronizeCsThread();
+      //m_device->Flush();
+      //m_device->SynchronizeCsThread();
+      // Maybe needs device wait too
+      m_device->WaitForResource(image, D3DLOCK_READONLY);
+
+      //tex->Device()->GetDXVKDevice()->waitForIdle();
+      //tex->waitres
 
       return D3D_OK;
     }
 
     HRESULT STDMETHODCALLTYPE Postsubmit(IDirect3DSurface9* pSurface) {
+      //return S_OK;
       if (unlikely(pSurface == nullptr))
         return D3DERR_INVALIDCALL;
 
