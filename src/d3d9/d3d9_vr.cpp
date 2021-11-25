@@ -99,7 +99,7 @@ namespace dxvk {
       //return S_OK;
       if (unlikely(pSurface == nullptr))
         return D3DERR_INVALIDCALL;
-
+      /*
       auto* tex = static_cast<D3D9Surface*>(pSurface)->GetCommonTexture();
       const auto& image = tex->GetImage();
 
@@ -113,7 +113,7 @@ namespace dxvk {
         tex, &subresources,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         image->info().layout);
-      
+      */
       m_lock = D3D9DeviceLock();
 
       return D3D_OK;

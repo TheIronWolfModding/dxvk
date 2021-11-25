@@ -4072,7 +4072,7 @@ namespace dxvk {
       return 0;
 
     std::array<uint32_t, 3> offsets = { pBox->Front, pBox->Top, pBox->Left };
-
+    
     uint32_t elementSize = 1;
 
     if (FormatInfo != nullptr) {
