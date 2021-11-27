@@ -72,7 +72,7 @@ namespace dxvk {
       const auto& image = tex->GetImage();
 
       m_lock = m_device->LockDevice();
-      
+
       VkImageSubresourceRange subresources = {
         VK_IMAGE_ASPECT_COLOR_BIT,
         0, image->info().mipLevels,
@@ -96,7 +96,6 @@ namespace dxvk {
     }
 
     HRESULT STDMETHODCALLTYPE Postsubmit(IDirect3DSurface9* pSurface) {
-      //return S_OK;
       if (unlikely(pSurface == nullptr))
         return D3DERR_INVALIDCALL;
       /*
