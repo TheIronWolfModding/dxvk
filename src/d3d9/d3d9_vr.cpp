@@ -9,16 +9,18 @@
 
 namespace dxvk {
 
-  class D3D9VR final : public ComObjectClamp<IDirect3DVR9> {
-
+  class D3D9VR final : public ComObjectClamp<IDirect3DVR9>
+  {
   public:
 
     D3D9VR(IDirect3DDevice9* pDevice)
-      : m_device(static_cast<D3D9DeviceEx*>(pDevice)) {
+      : m_device(static_cast<D3D9DeviceEx*>(pDevice))
+    {}
 
-    }
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) {
+    HRESULT STDMETHODCALLTYPE QueryInterface(
+      REFIID riid,
+      void** ppvObject)
+    {
       if (ppvObject == nullptr)
         return E_POINTER;
 
@@ -35,8 +37,10 @@ namespace dxvk {
       return E_NOINTERFACE;
     }
 
-
-    HRESULT STDMETHODCALLTYPE GetVRDesc(IDirect3DSurface9* pSurface, D3D9_TEXTURE_VR_DESC* pDesc) {
+    HRESULT STDMETHODCALLTYPE GetVRDesc(
+      IDirect3DSurface9* pSurface,
+      D3D9_TEXTURE_VR_DESC* pDesc)
+    {
       if (unlikely(pSurface == nullptr || pDesc == nullptr))
         return D3DERR_INVALIDCALL;
 
@@ -64,14 +68,15 @@ namespace dxvk {
       return D3D_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE Presubmit(IDirect3DSurface9* pSurface) {
+    HRESULT STDMETHODCALLTYPE TransferSurface(
+      IDirect3DSurface9* pSurface,
+      BOOL waitResourceIdle)
+    {
       if (unlikely(pSurface == nullptr))
         return D3DERR_INVALIDCALL;
       
       auto* tex = static_cast<D3D9Surface*>(pSurface)->GetCommonTexture();
       const auto& image = tex->GetImage();
-
-      m_lock = m_device->LockDevice();
 
       VkImageSubresourceRange subresources = {
         VK_IMAGE_ASPECT_COLOR_BIT,
@@ -84,42 +89,34 @@ namespace dxvk {
         image->info().layout,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
       
-      //m_device->Flush();
-      //m_device->SynchronizeCsThread();
       // Maybe needs device wait too
-      m_device->WaitForResource(image, D3DLOCK_READONLY);
-
-      //tex->Device()->GetDXVKDevice()->waitForIdle();
-      //tex->waitres
+      if (waitResourceIdle)
+        m_device->WaitForResource(image, D3DLOCK_READONLY);
 
       return D3D_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE Postsubmit(IDirect3DSurface9* pSurface) {
-      if (unlikely(pSurface == nullptr))
-        return D3DERR_INVALIDCALL;
-      /*
-      auto* tex = static_cast<D3D9Surface*>(pSurface)->GetCommonTexture();
-      const auto& image = tex->GetImage();
+    HRESULT STDMETHODCALLTYPE LockDevice()
+    { 
+      m_lock = m_device->LockDevice();
+      return D3D_OK;
+    }
 
-      VkImageSubresourceRange subresources = {
-        VK_IMAGE_ASPECT_COLOR_BIT,
-        0, image->info().mipLevels,
-        0, image->info().numLayers
-      };
-
-      m_device->TransformImage(
-        tex, &subresources,
-        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        image->info().layout);
-      */
+    HRESULT STDMETHODCALLTYPE UnlockDevice()
+    {
       m_lock = D3D9DeviceLock();
+      return D3D_OK;
+    }
 
+    HRESULT STDMETHODCALLTYPE WaitDeviceIdle()
+    {
+      m_device->Flush();
+      m_device->SynchronizeCsThread();
+      m_device->GetDXVKDevice()->waitForIdle();
       return D3D_OK;
     }
 
   private:
-
     D3D9DeviceEx* m_device;
     D3D9DeviceLock m_lock;
   };

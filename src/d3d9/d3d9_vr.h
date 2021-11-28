@@ -23,10 +23,10 @@ struct D3D9_TEXTURE_VR_DESC {
 MIDL_INTERFACE("7e272b32-a49c-46c7-b1a4-ef52936bec87")
 IDirect3DVR9 : public IUnknown {
   virtual HRESULT STDMETHODCALLTYPE GetVRDesc(IDirect3DSurface9* pSurface, D3D9_TEXTURE_VR_DESC* pDesc) = 0;
-
-  virtual HRESULT STDMETHODCALLTYPE Presubmit(IDirect3DSurface9* pSurface) = 0;
-
-  virtual HRESULT STDMETHODCALLTYPE Postsubmit(IDirect3DSurface9* pSurface) = 0;
+  virtual HRESULT STDMETHODCALLTYPE TransferSurface(IDirect3DSurface9* pSurface, BOOL waitResourceIdle) = 0;
+  virtual HRESULT STDMETHODCALLTYPE LockDevice() = 0;
+  virtual HRESULT STDMETHODCALLTYPE UnlockDevice() = 0;
+  virtual HRESULT STDMETHODCALLTYPE WaitDeviceIdle() = 0;
 };
 
 #ifdef _MSC_VER
