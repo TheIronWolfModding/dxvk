@@ -657,6 +657,16 @@ namespace dxvk {
   }
 
 
+  bool Config::parseOptionValue(const std::string& value, float& result)
+  {
+    if (value.size() == 0)
+      return false;
+
+    result = static_cast<float>(std::min(std::max(::atof(value.c_str()), 0.0), 1.0));
+    return true;
+  }
+
+
   template<typename I, typename V>
   bool Config::parseStringOption(
           std::string   str,
