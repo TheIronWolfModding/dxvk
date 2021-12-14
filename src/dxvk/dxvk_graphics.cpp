@@ -340,10 +340,8 @@ namespace dxvk {
     msInfo.pNext                  = nullptr;
     msInfo.flags                  = 0;
     msInfo.rasterizationSamples   = sampleCount;
-    //msInfo.sampleShadingEnable    = m_common.msSampleShadingEnable;
-    //msInfo.minSampleShading       = m_common.msSampleShadingFactor;
-    msInfo.sampleShadingEnable    = VK_TRUE;
-    msInfo.minSampleShading       = 1.0f;
+    msInfo.sampleShadingEnable    = m_common.msSampleShadingEnable;
+    msInfo.minSampleShading       = m_common.msSampleShadingFactor;
     msInfo.pSampleMask            = &sampleMask;
     msInfo.alphaToCoverageEnable  = state.ms.enableAlphaToCoverage();
     msInfo.alphaToOneEnable       = VK_FALSE;
