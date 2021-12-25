@@ -447,6 +447,9 @@ namespace dxvk {
       VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT |
       VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
+    m_d24s8Support = false;
+    m_d16s8Support = false;
+
     // VK_EXT_4444_formats
     m_a4r4g4b4Support = CheckImageFormatSupport(adapter, VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT,
       VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
