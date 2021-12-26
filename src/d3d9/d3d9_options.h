@@ -156,6 +156,9 @@ namespace dxvk {
 
     /// Use device local memory for constant buffers.
     bool deviceLocalConstantBuffers;
+
+    /// Force VK_FORMAT_D32_SFLOAT_S8_UINT depth stencil for increased precision.
+    bool forceD32FS8DepthStencil;
   };
 
 }
