@@ -5,6 +5,7 @@
 
 #include "d3d9_device_child.h"
 #include "d3d9_format.h"
+#include "d3d9_mem.h"
 
 namespace dxvk {
 
@@ -13,7 +14,8 @@ namespace dxvk {
    */
   enum D3D9_COMMON_BUFFER_MAP_MODE {
     D3D9_COMMON_BUFFER_MAP_MODE_BUFFER,
-    D3D9_COMMON_BUFFER_MAP_MODE_DIRECT
+    D3D9_COMMON_BUFFER_MAP_MODE_DIRECT,
+    D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE
   };
 
   /**
@@ -78,6 +80,8 @@ namespace dxvk {
             D3D9DeviceEx*      pDevice,
       const D3D9_BUFFER_DESC*  pDesc);
 
+    ~D3D9CommonBuffer();
+
     HRESULT Lock(
             UINT   OffsetToLock,
             UINT   SizeToLock,
@@ -89,11 +93,11 @@ namespace dxvk {
     /**
     * \brief Determine the mapping mode of the buffer, (ie. direct mapping or backed)
     */
-    inline D3D9_COMMON_BUFFER_MAP_MODE DetermineMapMode(const D3D9Options* options) const {
-      return (m_desc.Pool == D3DPOOL_DEFAULT && (m_desc.Usage & (D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY)) && options->allowDirectBufferMapping)
-        ? D3D9_COMMON_BUFFER_MAP_MODE_DIRECT
-        : D3D9_COMMON_BUFFER_MAP_MODE_BUFFER;
-    }
+    D3D9_COMMON_BUFFER_MAP_MODE DetermineMapMode(const D3D9Options* options) const;
+
+    bool AllocData();
+    void* GetData(); 
+    void UnmapData() { m_data.Unmap(); }
 
     /**
     * \brief Get the mapping mode of the buffer, (ie. direct mapping or backed)
@@ -242,6 +246,7 @@ namespace dxvk {
 
     uint64_t                    m_seq = 0ull;
 
+    D3D9Memory                  m_data;
   };
 
 }

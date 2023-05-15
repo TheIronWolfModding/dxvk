@@ -137,6 +137,9 @@ namespace dxvk {
     /// Use device local memory for constant buffers.
     bool deviceLocalConstantBuffers;
 
+    /// Force VK_FORMAT_D32_SFLOAT_S8_UINT depth stencil for increased precision.
+    bool forceD32FS8DepthStencil;
+
     /// Disable direct buffer mapping
     bool allowDirectBufferMapping;
 
@@ -151,6 +154,9 @@ namespace dxvk {
 
     /// Enable emulation of device loss when a fullscreen app loses focus
     bool deviceLost;
+    
+    /// How much virtual memory will be used for buffers (in MB).
+    int32_t bufferMemory;
   };
 
 }

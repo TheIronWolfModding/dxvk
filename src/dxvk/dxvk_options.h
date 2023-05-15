@@ -32,6 +32,9 @@ namespace dxvk {
 
     /// HUD elements
     std::string hud;
+
+    /// Forced Sample Rate Shading factor
+    float forcedSampleRateShadingFactor;
   };
 
 }
