@@ -50,6 +50,7 @@ namespace dxvk {
     return m_parent->UnlockBuffer(this);
   }
 
+  // This works reliably in GTR2, so keep it simple and ignore incoming changes.
   D3D9_COMMON_BUFFER_MAP_MODE D3D9CommonBuffer::DetermineMapMode(const D3D9Options* options) const
   {
     auto mm = (m_desc.Pool == D3DPOOL_DEFAULT && (m_desc.Usage & (D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY)) && options->allowDirectBufferMapping)
