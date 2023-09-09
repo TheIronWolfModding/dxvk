@@ -11,8 +11,7 @@ namespace dxvk {
     useRawSsbo                    = config.getOption<Tristate>("dxvk.useRawSsbo",                    Tristate::Auto);
     maxChunkSize                  = config.getOption<int32_t>("dxvk.maxChunkSize",                   0);
     hud                           = config.getOption<std::string>("dxvk.hud",                        "");
-    tearFree                      = config.getOption<Tristate>("dxvk.tearFree",               Tristate::Auto);
+    tearFree                      = config.getOption<Tristate>("dxvk.tearFree",                      Tristate::Auto);
     forcedSampleRateShadingFactor = config.getOption<float>("dxvk.forceSampleRateShadingFactor",     1.0f);
-    trackPipelineLifetime         = config.getOption<Tristate>("dxvk.trackPipelineLifetime",  Tristate::Auto);
   }
 }
