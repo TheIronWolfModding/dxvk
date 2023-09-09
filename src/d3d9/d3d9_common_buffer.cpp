@@ -81,6 +81,7 @@ namespace dxvk {
     }
   }
 
+  
   Rc<DxvkBuffer> D3D9CommonBuffer::CreateBuffer() const {
     DxvkBufferCreateInfo  info;
     info.size   = m_desc.Size;
