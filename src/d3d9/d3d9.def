@@ -27,3 +27,6 @@ EXPORTS
   DXVK_UnRegisterAnnotation @28258 NONAME
 
   Direct3D9ForceHybridEnumeration @16 NONAME PRIVATE
+  
+  Direct3DCreate9On12 @20
+  Direct3DCreate9On12Ex @21

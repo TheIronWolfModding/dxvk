@@ -175,7 +175,7 @@ namespace dxvk {
       VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
       appInfo.pApplicationName      = appName.c_str();
       appInfo.pEngineName           = "DXVK";
-      appInfo.engineVersion         = VK_MAKE_VERSION(2, 2, 0);
+      appInfo.engineVersion         = VK_MAKE_VERSION(2, 3, 0);
       appInfo.apiVersion            = VK_MAKE_VERSION(1, 3, 0);
 
       VkInstanceCreateInfo info = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
@@ -211,6 +211,7 @@ namespace dxvk {
 
   std::vector<DxvkExt*> DxvkInstance::getExtensionList(DxvkInstanceExtensions& ext, bool withDebug) {
     std::vector<DxvkExt*> result = {{
+      &ext.extSurfaceMaintenance1,
       &ext.khrGetSurfaceCapabilities2,
       &ext.khrSurface,
     }};
@@ -286,7 +287,8 @@ namespace dxvk {
     
     if (result.empty()) {
       Logger::warn("DXVK: No adapters found. Please check your "
-                   "device filter settings and Vulkan setup.");
+                   "device filter settings and Vulkan setup. "
+                   "A Vulkan 1.3 capable driver is required.");
     } else if (numDGPU == 1 && numIGPU == 1) {
       result[1]->linkToDGPU(result[0]);
     }
