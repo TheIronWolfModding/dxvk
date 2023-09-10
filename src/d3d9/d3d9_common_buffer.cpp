@@ -20,8 +20,7 @@ namespace dxvk {
       m_dirtyRange = D3D9Range(0, m_desc.Size);
   }
 
-  D3D9CommonBuffer::~D3D9CommonBuffer()
-  {
+  D3D9CommonBuffer::~D3D9CommonBuffer() {
     if (m_desc.Pool == D3DPOOL_DEFAULT)
       m_parent->DecrementLosableCounter();
 
@@ -50,9 +49,8 @@ namespace dxvk {
     return m_parent->UnlockBuffer(this);
   }
 
-  // This works reliably in GTR2, so keep it simple and ignore incoming changes.
-  D3D9_COMMON_BUFFER_MAP_MODE D3D9CommonBuffer::DetermineMapMode(const D3D9Options* options) const
-  {
+  // GTR2_SPECIFIC: This works reliably in GTR2, so keep it simple and ignore incoming changes.
+  D3D9_COMMON_BUFFER_MAP_MODE D3D9CommonBuffer::DetermineMapMode(const D3D9Options* options) const {
     auto mm = (m_desc.Pool == D3DPOOL_DEFAULT && (m_desc.Usage & (D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY)) && options->allowDirectBufferMapping)
       ? D3D9_COMMON_BUFFER_MAP_MODE_DIRECT
       : D3D9_COMMON_BUFFER_MAP_MODE_BUFFER;
