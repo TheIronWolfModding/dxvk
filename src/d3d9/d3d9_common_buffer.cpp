@@ -158,8 +158,8 @@ namespace dxvk {
     return m_parent->GetDXVKDevice()->createBuffer(info, memoryFlags);
   }
 
-  bool D3D9CommonBuffer::AllocData()
-  {
+
+  bool D3D9CommonBuffer::AllocData() {
       // TODO_MMF:
   /*if (m_mapMode != D3D9_COMMON_TEXTURE_MAP_MODE_UNMAPPABLE)
     return CreateBufferSubresource(Subresource);*/
@@ -173,8 +173,8 @@ namespace dxvk {
     return true;
   }
 
-  void* D3D9CommonBuffer::GetData()
-  {
+
+  void* D3D9CommonBuffer::GetData() {
     // TODO_MMF:
     /*if (m_mapMode != D3D9_COMMON_TEXTURE_MAP_MODE_UNMAPPABLE)
       return m_mappedSlice.mapPtr;*/
