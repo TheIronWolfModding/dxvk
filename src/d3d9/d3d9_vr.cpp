@@ -99,9 +99,10 @@ public:
 
   HRESULT STDMETHODCALLTYPE WaitDeviceIdle()
   {
-    m_device->Flush();
-    // Not clear if we need all here, perhaps...
-    m_device->SynchronizeCsThread(DxvkCsThread::SynchronizeAll);
+    // This function got repurposed for single purpose: to workaround race during Lens Flare rendering.
+    // For general wait, below two calls might be necessary.
+    //m_device->Flush();
+    //m_device->SynchronizeCsThread(DxvkCsThread::SynchronizeAll);
     m_device->GetDXVKDevice()->waitForIdle();
     return D3D_OK;
   }
