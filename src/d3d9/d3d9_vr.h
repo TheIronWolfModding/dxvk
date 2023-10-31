@@ -37,13 +37,14 @@ IDirect3DVR9 : public IUnknown
                                               D3D9_TEXTURE_VR_DESC * pDesc) = 0;
   virtual HRESULT STDMETHODCALLTYPE TransferSurface(IDirect3DSurface9 *
                                                     pSurface) = 0;
-  virtual HRESULT STDMETHODCALLTYPE BeginOVRSubmit() = 0;
+  virtual HRESULT STDMETHODCALLTYPE BeginOVRSubmit() = 0;  // TODO_RENAME:
   virtual HRESULT STDMETHODCALLTYPE EndOVRSubmit() = 0;
   virtual HRESULT STDMETHODCALLTYPE LockDevice() = 0;
   virtual HRESULT STDMETHODCALLTYPE UnlockDevice() = 0;
   virtual HRESULT STDMETHODCALLTYPE WaitDeviceIdle() = 0;
   virtual HRESULT STDMETHODCALLTYPE GetOXRVkDeviceDesc(OXR_VK_DEVICE_DESC *
                                                        vkDeviceDescOut) = 0;
+  virtual HRESULT STDMETHODCALLTYPE WaitForVB(IDirect3DVertexBuffer9* pVB) = 0;
 };
 
 #ifdef _MSC_VER

@@ -140,6 +140,18 @@ public:
     return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE WaitForVB(IDirect3DVertexBuffer9* pVB)
+  {
+    m_lock = D3D9DeviceLock();
+
+    D3D9VertexBuffer* buffer = static_cast<D3D9VertexBuffer*>(pVB);
+    auto cb = buffer->GetCommonBuffer();
+
+    Rc<DxvkBuffer> const mappingBuffer = cb->GetBuffer<D3D9_COMMON_BUFFER_TYPE_MAPPING>();
+    return m_device->WaitForResource(
+      mappingBuffer, cb->GetMappingBufferSequenceNumber(), 0x0);
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;

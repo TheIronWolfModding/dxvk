@@ -1,4 +1,5 @@
 #include "d3d9_device.h"
+#include "d3d9_buffer.h"
 
 #include "d3d9_annotation.h"
 #include "d3d9_common_texture.h"
@@ -32,6 +33,7 @@
 #endif
 #include <assert.h>
 
+IDirect3DVertexBuffer9* gVB = nullptr;
 namespace dxvk {
 
   D3D9DeviceEx::D3D9DeviceEx(
@@ -733,6 +735,7 @@ namespace dxvk {
   }
 
 
+  
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::CreateVertexBuffer(
           UINT                     Length,
           DWORD                    Usage,
@@ -763,6 +766,13 @@ namespace dxvk {
       const Com<D3D9VertexBuffer> buffer = new D3D9VertexBuffer(this, &desc);
       m_initializer->InitBuffer(buffer->GetCommonBuffer());
       *ppVertexBuffer = buffer.ref();
+      static int seqNum = 0;
+      
+      //if (seqNum++ == 121)  // VS
+      if (seqNum++ == 120)  // WinDbg
+      //if (Length == 0x00800000)
+        gVB = *ppVertexBuffer;
+     
       if (desc.Pool == D3DPOOL_DEFAULT)
         m_losableResourceCounter++;
 

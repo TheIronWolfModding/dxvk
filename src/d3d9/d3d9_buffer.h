@@ -1,9 +1,13 @@
 #pragma once
 
+
 #include "d3d9_resource.h"
 
 #include "d3d9_common_buffer.h"
+//#undef NDEBUG
+#include <cassert>
 
+extern IDirect3DVertexBuffer9* gVB;
 namespace dxvk {
 
   template <typename... Type>
@@ -24,6 +28,25 @@ namespace dxvk {
             UINT   SizeToLock,
             void** ppbData,
             DWORD  Flags) final {
+
+      /* if (this == (void*)gVB) {
+        char buff[4096];
+        ::sprintf(buff,
+                  Flags == 8192
+                    ? "DISCARD LOCK Offset: %d    Size: %d    Flags: %d\n"
+                    : "LOCK Offset: %d    Size: %d    Flags: %d\n",
+                  OffsetToLock,
+                  SizeToLock,
+                  Flags);
+        // SOME COMPILER SETTING PREVENTS THIS FROM WORKING.
+        ::OutputDebugStringA(buff);
+        //if (Flags == 8192)
+          //assert(false);
+          //__debugbreak();
+        //::DebugBreak();
+        
+      }*/
+
       return m_buffer.Lock(
         OffsetToLock,
         SizeToLock,
@@ -94,3 +117,5 @@ namespace dxvk {
   }
 
 }
+
+//#define NDEBUG
