@@ -28,7 +28,8 @@ namespace dxvk {
             UINT   SizeToLock,
             void** ppbData,
             DWORD  Flags) final {
-
+      //if (Flags == 4096)  did not help.
+        //Flags = 8192;
       /* if (this == (void*)gVB) {
         char buff[4096];
         ::sprintf(buff,

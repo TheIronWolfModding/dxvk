@@ -82,6 +82,12 @@ public:
                              image->info().layout,
                              VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
+    //const auto* tex = surface->GetCommonTexture();
+    /* Rc<DxvkResource> rcImg = image;
+    m_device->WaitForResource(rcImg,
+                              DxvkCsThread::SynchronizeAll,
+                              0x0);*/
+
     return D3D_OK;
   }
 
@@ -97,6 +103,7 @@ public:
     return D3D_OK;
   }
 
+  // REMEMBER: keep an eye on d3d9_interop.cpp.  DXVK guys will change it if sync changes are needed.
   HRESULT STDMETHODCALLTYPE WaitDeviceIdle()
   {
     // This function got repurposed for single purpose: to workaround race during Lens Flare rendering.
