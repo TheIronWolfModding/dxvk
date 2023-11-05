@@ -769,7 +769,8 @@ namespace dxvk {
       static int seqNum = 0;
       
       //if (seqNum++ == 121)  // VS
-      if (seqNum++ == 120)  // WinDbg
+      //if (seqNum++ == 120)  // WinDbg
+      if (seqNum++ == 6)  // substitue VB
       //if (Length == 0x00800000)
         gVB = *ppVertexBuffer;
      
