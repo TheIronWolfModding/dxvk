@@ -37,11 +37,12 @@ IDirect3DVR9 : public IUnknown
                                               D3D9_TEXTURE_VR_DESC * pDesc) = 0;
   virtual HRESULT STDMETHODCALLTYPE TransferSurface(IDirect3DSurface9 *
                                                     pSurface) = 0;
-  virtual HRESULT STDMETHODCALLTYPE BeginOVRSubmit() = 0;
-  virtual HRESULT STDMETHODCALLTYPE EndOVRSubmit() = 0;
+  virtual HRESULT STDMETHODCALLTYPE BeginVRSubmit() = 0;
+  virtual HRESULT STDMETHODCALLTYPE EndVRSubmit() = 0;
   virtual HRESULT STDMETHODCALLTYPE LockDevice() = 0;
   virtual HRESULT STDMETHODCALLTYPE UnlockDevice() = 0;
-  virtual HRESULT STDMETHODCALLTYPE WaitDeviceIdle() = 0;
+  virtual HRESULT STDMETHODCALLTYPE WaitDeviceIdle(BOOL flush) = 0;
+  virtual HRESULT STDMETHODCALLTYPE WaitGraphicsQueueIdle(BOOL flush) = 0;
   virtual HRESULT STDMETHODCALLTYPE GetOXRVkDeviceDesc(OXR_VK_DEVICE_DESC *
                                                        vkDeviceDescOut) = 0;
 };

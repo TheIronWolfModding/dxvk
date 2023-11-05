@@ -97,16 +97,28 @@ public:
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE WaitDeviceIdle()
+  HRESULT STDMETHODCALLTYPE WaitDeviceIdle(BOOL flush)
   {
-    m_device->Flush();
-    // Not clear if we need all here, perhaps...
-    m_device->SynchronizeCsThread(DxvkCsThread::SynchronizeAll);
+    if (flush) {
+      m_device->Flush();
+      m_device->SynchronizeCsThread(DxvkCsThread::SynchronizeAll);
+    }
     m_device->GetDXVKDevice()->waitForIdle();
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE BeginOVRSubmit()
+  HRESULT STDMETHODCALLTYPE WaitGraphicsQueueIdle(BOOL flush)
+  {
+    if (flush) {
+      m_device->Flush();
+      m_device->SynchronizeCsThread(DxvkCsThread::SynchronizeAll);
+    }
+    auto device = m_device->GetDXVKDevice();
+    device->vkd()->vkQueueWaitIdle(device->queues().graphics.queueHandle);
+    return D3D_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE BeginVRSubmit()
   {
     m_device->Flush();
     m_device->SynchronizeCsThread(DxvkCsThread::SynchronizeAll);
@@ -115,7 +127,7 @@ public:
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE EndOVRSubmit()
+  HRESULT STDMETHODCALLTYPE EndVRSubmit()
   {
     m_device->GetDXVKDevice()->unlockSubmission();
 
