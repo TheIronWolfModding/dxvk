@@ -48,7 +48,7 @@ IDirect3DVR9 : public IUnknown
   virtual HRESULT STDMETHODCALLTYPE WaitDeviceIdle(BOOL flush) = 0;
   virtual HRESULT STDMETHODCALLTYPE WaitGraphicsQueueIdle(BOOL flush) = 0;
 
-  virtual HRESULT STDMETHODCALLTYPE GetOXRVkDeviceDesc(OXR_VK_DEVICE_DESC *
+  virtual HRESULT STDMETHODCALLTYPE GetOXRVkDeviceDesc(OXR_VK_DEVICE_DESC*
                                                        vkDeviceDescOut) = 0;
 };
 
