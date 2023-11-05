@@ -63,7 +63,7 @@ public:
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE TransferSurface(IDirect3DSurface9* pSurface)
+  HRESULT STDMETHODCALLTYPE TransferSurfaceForVR(IDirect3DSurface9* pSurface)
   {
     if (unlikely(pSurface == nullptr))
       return D3DERR_INVALIDCALL;
