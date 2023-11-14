@@ -30,7 +30,7 @@ namespace dxvk {
             DWORD  Flags) final {
       //if (Flags == 4096)  did not help.
         //Flags = 8192;
-      if (this == (void*)gVB) {
+      /* if (this == (void*)gVB) {
         char buff[4096];
         ::sprintf(buff,
                   Flags == 8192
@@ -45,8 +45,7 @@ namespace dxvk {
           //assert(false);
           //__debugbreak();
         //::DebugBreak();
-        
-      }
+      }*/
 
       return m_buffer.Lock(
         OffsetToLock,

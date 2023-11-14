@@ -102,6 +102,10 @@ namespace dxvk {
   HRESULT STDMETHODCALLTYPE D3D9Query::Issue(DWORD dwIssueFlags) {
     // Note: No need to submit to CS if we don't do anything!
 
+    char buff[4096];
+    ::sprintf(buff, "Issue: %d    %d\n", this, dwIssueFlags);
+    ::OutputDebugStringA(buff);
+        
     if (dwIssueFlags == D3DISSUE_BEGIN) {
       if (QueryBeginnable(m_queryType)) {
         if (m_state == D3D9_VK_QUERY_BEGUN && QueryEndable(m_queryType)) {
@@ -134,6 +138,10 @@ namespace dxvk {
   HRESULT STDMETHODCALLTYPE D3D9Query::GetData(void* pData, DWORD dwSize, DWORD dwGetDataFlags) {
     D3D9DeviceLock lock = m_parent->LockDevice();
 
+    char buff[4096];
+    ::sprintf(buff, "GetData: %d    %d", this, dwGetDataFlags);
+    ::OutputDebugStringA(buff);
+    
     bool flush = dwGetDataFlags & D3DGETDATA_FLUSH;
 
     if (unlikely(m_parent->IsDeviceLost())) {
@@ -159,10 +167,13 @@ namespace dxvk {
     // If we get S_FALSE and it's not from the fact
     // they didn't call end, do some flushy stuff...
     if (flush && hr == S_FALSE && m_state != D3D9_VK_QUERY_BEGUN) {
+      ::OutputDebugStringA(" FLUSH");
       this->NotifyStall();
       m_parent->ConsiderFlush(GpuFlushType::ImplicitSynchronization);
     }
 
+    ::sprintf(buff, "RS:    %d      Ret:    %d\n", *((DWORD*)pData), hr);
+    ::OutputDebugStringA(buff);
     return hr;
   }
 
