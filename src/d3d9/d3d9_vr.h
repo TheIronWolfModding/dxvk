@@ -31,7 +31,9 @@ struct OXR_VK_DEVICE_DESC
 };
 
 // Remember: this class is very similar to D3D9VkInteropDevice introduced later.
-// Keep an eye on that class for sync changes.
+//           Keep an eye on that class for sync changes.
+//
+// Remember: add new functions at the end to improve back compat.
 MIDL_INTERFACE("7e272b32-a49c-46c7-b1a4-ef52936bec87")
 IDirect3DVR9 : public IUnknown
 {
