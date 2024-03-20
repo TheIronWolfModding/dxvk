@@ -165,7 +165,7 @@ namespace dxvk {
     return CreateBufferSubresource(Subresource);*/
 
     D3D9Memory& memory = m_data;
-    if (likely(memory))
+    if (likely(!!memory))
       return false;
 
     memory = m_parent->GetBufferAllocator()->Alloc(m_desc.Size);
