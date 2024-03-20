@@ -442,18 +442,23 @@ namespace dxvk {
     m_x4r4g4b4Support = options.supportX4R4G4B4;
     m_d32supportFinal = options.supportD32;
 
-    // AMD do not support 24-bit depth buffers on Vulkan,
-    // so we have to fall back to a 32-bit depth format.
-    m_d24s8Support = !options.useD32forD24 &&
-                     CheckImageFormatSupport(adapter, VK_FORMAT_D24_UNORM_S8_UINT,
-      VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT |
-      VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT);
+    if (likely(options.forceD32FS8DepthStencil)) {
+      m_d24s8Support = false;
+      m_d16s8Support = false;
+    } else {
+      // AMD do not support 24-bit depth buffers on Vulkan,
+      // so we have to fall back to a 32-bit depth format.
+      m_d24s8Support = !options.useD32forD24 &&
+                       CheckImageFormatSupport(adapter, VK_FORMAT_D24_UNORM_S8_UINT,
+        VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT |
+        VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT);
 
-    // NVIDIA do not support 16-bit depth buffers with stencil on Vulkan,
-    // so we have to fall back to a 32-bit depth format.
-    m_d16s8Support = CheckImageFormatSupport(adapter, VK_FORMAT_D16_UNORM_S8_UINT,
-      VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT |
-      VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT);
+      // NVIDIA do not support 16-bit depth buffers with stencil on Vulkan,
+      // so we have to fall back to a 32-bit depth format.
+      m_d16s8Support = CheckImageFormatSupport(adapter, VK_FORMAT_D16_UNORM_S8_UINT,
+        VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT |
+        VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT);
+    }
 
     if (!m_d24s8Support)
       Logger::info("D3D9: VK_FORMAT_D24_UNORM_S8_UINT -> VK_FORMAT_D32_SFLOAT_S8_UINT");

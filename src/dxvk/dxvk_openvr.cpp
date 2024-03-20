@@ -55,13 +55,13 @@ namespace dxvk {
     if (m_no_vr || m_initializedDevExt)
         return;
 
-    if (!m_vr_key)
+    /*if (!m_vr_key)
     {
         LSTATUS status;
 
         if ((status = RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Wine\\VR", 0, KEY_READ, &m_vr_key)))
             Logger::info(str::format("OpenVR: could not open registry key, status ", status));
-    }
+    }*/
 
     if (!m_vr_key && !m_compositor)
       m_compositor = this->getCompositor();
@@ -171,7 +171,8 @@ namespace dxvk {
         extensionList.resize(len);
         len = m_compositor->GetVulkanInstanceExtensionsRequired(extensionList.data(), len);
     }
-    return parseExtensionList(std::string(extensionList.data(), len));
+    return parseExtensionList(
+      std::string(extensionList.data(), len), true /*instance*/);
   }
   
   
@@ -208,18 +209,26 @@ namespace dxvk {
         extensionList.resize(len);
         len = m_compositor->GetVulkanDeviceExtensionsRequired(adapter->handle(), extensionList.data(), len);
     }
-    return parseExtensionList(std::string(extensionList.data(), len));
+    return parseExtensionList(std::string(extensionList.data(), len),
+                              false /*instance*/);
   }
   
   
-  DxvkNameSet VrInstance::parseExtensionList(const std::string& str) const {
+  DxvkNameSet
+  VrInstance::parseExtensionList(const std::string& str, bool instance) const
+  {
     DxvkNameSet result;
     
     std::stringstream strstream(str);
     std::string       section;
     
-    while (std::getline(strstream, section, ' '))
+    while (std::getline(strstream, section, ' ')) {
       result.add(section.c_str());
+      if (instance)
+        Logger::info(str::format("OpenVR: Instance Extension requested:", section));
+      else
+        Logger::info(str::format("OpenVR: Device Extension requested:", section));
+    }
     
     return result;
   }
@@ -232,9 +241,8 @@ namespace dxvk {
     // applications may not have OpenVR loaded at the time
     // they create the DXGI instance, so we try our own DLL.
     m_ovrApi = this->loadLibrary();
-    
     if (!m_ovrApi) {
-      Logger::info("OpenVR: Failed to locate module");
+      Logger::info("OpenVR is not in use.");
       return nullptr;
     }
     
@@ -305,14 +313,12 @@ namespace dxvk {
 
 
   HMODULE VrInstance::loadLibrary() {
-    HMODULE handle;
-
-    // Use openvr_api.dll only if already loaded in the process (and reference it which GetModuleHandleEx does without
-    // GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT flag).
-    if (!::GetModuleHandleEx(0, "openvr_api.dll", &handle))
+    HMODULE handle = ::GetModuleHandle("openvr_api.dll");
+    /*if (!(handle = ::GetModuleHandle("openvr_api.dll")))
+    {
       handle = ::LoadLibrary("openvr_api_dxvk.dll");
-
-    m_loadedOvrApi = handle != nullptr;
+      m_loadedOvrApi = handle != nullptr;
+    }*/
     return handle;
   }
 

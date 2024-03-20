@@ -88,7 +88,7 @@ namespace dxvk {
 
     // Initialization is handled by D3D9Initializer
     if (m_mapMode == D3D9_COMMON_TEXTURE_MAP_MODE_UNMAPPABLE)
-      m_data = m_device->GetAllocator()->Alloc(m_totalSize);
+      m_data = m_device->GetTextureAllocator()->Alloc(m_totalSize);
     else if (m_mapMode != D3D9_COMMON_TEXTURE_MAP_MODE_NONE && m_desc.Pool != D3DPOOL_DEFAULT)
       CreateBuffer(false);
   }
@@ -681,7 +681,6 @@ namespace dxvk {
   const Rc<DxvkBuffer>& D3D9CommonTexture::GetBuffer() {
     return m_buffer;
   }
-
 
   DxvkBufferSlice D3D9CommonTexture::GetBufferSlice(UINT Subresource) {
     return DxvkBufferSlice(GetBuffer(), m_memoryOffset[Subresource], GetMipSize(Subresource));
