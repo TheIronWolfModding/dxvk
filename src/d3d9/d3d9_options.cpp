@@ -99,6 +99,11 @@ namespace dxvk {
     }
 
     this->shaderDumpPath = env::getEnvVar("DXVK_SHADER_DUMP_PATH");
+    
+    if (!env::getEnvVar("DXVK_FORCE_DIALOG_MODE_OFF").empty()) {
+      Logger::info("Configuration override: this->enableDialogMode forced off via env. variable.");
+      this->enableDialogMode = false;
+    }
   }
 
 }
