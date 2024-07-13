@@ -44,6 +44,9 @@ namespace dxvk {
 
     /// Forced Sample Rate Shading factor
     float forcedSampleRateShadingFactor;
+
+    // Device name
+    std::string deviceFilter;
   };
 
 }
