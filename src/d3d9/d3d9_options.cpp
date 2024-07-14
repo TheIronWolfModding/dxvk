@@ -70,7 +70,7 @@ namespace dxvk {
     this->longMad                       = config.getOption<bool>        ("d3d9.longMad",                       false);
     this->cachedDynamicBuffers          = config.getOption<bool>        ("d3d9.cachedDynamicBuffers",          false);
     this->deviceLocalConstantBuffers    = config.getOption<bool>        ("d3d9.deviceLocalConstantBuffers",    false);
-    this->allowDirectBufferMapping      = config.getOption<bool>        ("d3d9.allowDirectBufferMapping",      true);
+    this->allowDirectBufferMapping      = config.getOption<bool>        ("d3d9.allowDirectBufferMapping",      false);
     this->seamlessCubes                 = config.getOption<bool>        ("d3d9.seamlessCubes",                 false);
     this->textureMemory                 = config.getOption<int32_t>     ("d3d9.textureMemory",                 100) << 20;
     this->deviceLossOnFocusLoss         = config.getOption<bool>        ("d3d9.deviceLossOnFocusLoss",         false);
@@ -84,6 +84,9 @@ namespace dxvk {
 
     // Clamp LOD bias so that people don't abuse this in unintended ways
     this->samplerLodBias = dxvk::fclamp(this->samplerLodBias, -2.0f, 1.0f);
+    
+    this->bufferMemory                  = config.getOption<int32_t>     ("d3d9.bufferMemory",                  100) << 20;
+    this->forceD32FS8DepthStencil       = config.getOption<bool>        ("d3d9.forceD32FS8DepthStencil",       false);
 
     std::string floatEmulation = Config::toLower(config.getOption<std::string>("d3d9.floatEmulation", "auto"));
     if (floatEmulation == "strict") {
@@ -100,6 +103,11 @@ namespace dxvk {
     }
 
     this->shaderDumpPath = env::getEnvVar("DXVK_SHADER_DUMP_PATH");
+    
+    if (!env::getEnvVar("DXVK_FORCE_DIALOG_MODE_OFF").empty()) {
+      Logger::info("Configuration override: this->enableDialogMode forced off via env. variable.");
+      this->enableDialogMode = false;
+    }
   }
 
 }

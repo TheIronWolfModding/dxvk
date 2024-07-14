@@ -130,6 +130,9 @@ namespace dxvk {
     /// Use device local memory for constant buffers.
     bool deviceLocalConstantBuffers;
 
+    /// Force VK_FORMAT_D32_SFLOAT_S8_UINT depth stencil for increased precision.
+    bool forceD32FS8DepthStencil;
+
     /// Disable direct buffer mapping
     bool allowDirectBufferMapping;
 
@@ -163,6 +166,9 @@ namespace dxvk {
 
     /// Enable depth texcoord Z (Dref) scaling (D3D8 quirk)
     int32_t drefScaling;
+    
+    /// How much virtual memory will be used for buffers (in MB).
+    int32_t bufferMemory;
   };
 
 }
