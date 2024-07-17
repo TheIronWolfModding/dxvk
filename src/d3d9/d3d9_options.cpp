@@ -105,8 +105,14 @@ namespace dxvk {
     this->shaderDumpPath = env::getEnvVar("DXVK_SHADER_DUMP_PATH");
     
     if (!env::getEnvVar("DXVK_FORCE_DIALOG_MODE_OFF").empty()) {
-      Logger::info("Configuration override: this->enableDialogMode forced off via env. variable.");
+      Logger::info("Configuration override: d3d9.enableDialogMode forced off via env. variable.");
       this->enableDialogMode = false;
+    }
+
+    if (!env::getEnvVar("DXVK_FORCE_FRAME_LIMIT_OFF").empty()) {
+      Logger::info("Configuration override: d3d9.maxFrameRate forced -1 (no limit) "
+                   "via env. variable.");
+      this->maxFrameRate = -1;
     }
   }
 
