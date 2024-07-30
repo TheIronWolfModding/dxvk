@@ -163,6 +163,12 @@ else
   ]
 endif
 
+if get_option('debug')
+  compiler_args += [
+    '-DGTR2_SPECIFIC_VALIDATE_PARAMS',
+  ]
+endif
+
 dxvk_include_path = include_directories(dxvk_include_dirs)
 
 add_project_arguments(cpp.get_supported_arguments(compiler_args), language: 'cpp')

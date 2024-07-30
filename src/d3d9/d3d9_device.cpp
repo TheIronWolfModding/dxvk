@@ -1230,8 +1230,10 @@ namespace dxvk {
       uint32_t(blitInfo.dstOffsets[1].y - blitInfo.dstOffsets[0].y),
       uint32_t(blitInfo.dstOffsets[1].z - blitInfo.dstOffsets[0].z) };
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     bool srcIsDepth = IsDepthFormat(srcFormat);
     bool dstIsDepth = IsDepthFormat(dstFormat);
+
     if (unlikely(srcIsDepth || dstIsDepth)) {
       if (unlikely(!srcIsDepth || !dstIsDepth))
         return D3DERR_INVALIDCALL;
@@ -1245,6 +1247,7 @@ namespace dxvk {
       if (unlikely(m_flags.test(D3D9DeviceFlag::InScene)))
         return D3DERR_INVALIDCALL;
     }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     // Copies would only work if the extents match. (ie. no stretching)
     bool stretch = srcCopyExtent != dstCopyExtent;
@@ -7214,8 +7217,10 @@ namespace dxvk {
     const     uint32_t regCountHardware = DetermineHardwareRegCount<ProgramType, ConstantType>();
     constexpr uint32_t regCountSoftware = DetermineSoftwareRegCount<ProgramType, ConstantType>();
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(StartRegister + Count > regCountSoftware))
       return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     Count = UINT(
       std::max<INT>(
