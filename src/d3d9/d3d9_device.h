@@ -931,10 +931,15 @@ namespace dxvk {
             UINT                              Stride);
 
     void BindIndices();
-
+#ifdef GTR2_SPECIFIC_D3D9_MULTITHREADED
     D3D9DeviceLock LockDevice() {
       return m_multithread.AcquireLock();
     }
+#else
+    D3D9DeviceLock LockDevice() {
+      return D3D9DeviceLock();
+    }
+#endif // GTR2_SPECIFIC_D3D9_MULTITHREADED
 
     const D3D9Options* GetOptions() const {
       return &m_d3d9Options;
