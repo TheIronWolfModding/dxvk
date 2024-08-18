@@ -2540,8 +2540,10 @@ namespace dxvk {
 
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::SetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(InvalidSampler(Stage)))
       return D3D_OK;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     DWORD stateSampler = RemapSamplerState(Stage);
 
@@ -2600,8 +2602,10 @@ namespace dxvk {
           DWORD               Sampler,
           D3DSAMPLERSTATETYPE Type,
           DWORD               Value) {
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(InvalidSampler(Sampler)))
       return D3D_OK;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     uint32_t stateSampler = RemapSamplerState(Sampler);
 
@@ -3341,8 +3345,10 @@ namespace dxvk {
           UINT                    Stride) {
     D3D9DeviceLock lock = LockDevice();
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(StreamNumber >= caps::MaxStreams))
       return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     D3D9VertexBuffer* buffer = static_cast<D3D9VertexBuffer*>(pStreamData);
 
@@ -4499,7 +4505,12 @@ namespace dxvk {
 
 
   bool D3D9DeviceEx::ShouldRecord() {
+    assert(m_recorder == nullptr);
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    return false;
+#else
     return m_recorder != nullptr && !m_recorder->IsApplying();
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
   }
 
 
@@ -5078,8 +5089,10 @@ namespace dxvk {
           DWORD                   Flags) {
     D3D9DeviceLock lock = LockDevice();
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(ppbData == nullptr))
       return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     auto& desc = *pResource->Desc();
 
