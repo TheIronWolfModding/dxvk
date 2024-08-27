@@ -1242,7 +1242,6 @@ namespace dxvk {
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     bool srcIsDepth = IsDepthFormat(srcFormat);
     bool dstIsDepth = IsDepthFormat(dstFormat);
-
     if (unlikely(srcIsDepth || dstIsDepth)) {
       if (unlikely(!srcIsDepth || !dstIsDepth))
         return D3DERR_INVALIDCALL;
@@ -1276,7 +1275,6 @@ namespace dxvk {
       // Using a texture without USAGE_RENDERTARGET as destination however does not.
       if (unlikely(!dstIsSurface && !dstHasRTUsage))
         return D3DERR_INVALIDCALL;
-
     } else {
       bool srcIsSurface = srcTextureInfo->GetType() == D3DRTYPE_SURFACE;
       bool srcHasRTUsage = (srcTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
@@ -1293,7 +1291,6 @@ namespace dxvk {
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (!fastPath || needsResolve) {
-
       // Compressed destination formats are forbidden for blits.
       if (dstFormatInfo->flags.test(DxvkFormatFlag::BlockCompressed))
         return D3DERR_INVALIDCALL;
@@ -7244,7 +7241,6 @@ namespace dxvk {
       const T*    pConstantData,
             UINT  Count) {
     const     uint32_t regCountHardware = DetermineHardwareRegCount<ProgramType, ConstantType>();
-
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     constexpr uint32_t regCountSoftware = DetermineSoftwareRegCount<ProgramType, ConstantType>();
     if (unlikely(StartRegister + Count > regCountSoftware))
