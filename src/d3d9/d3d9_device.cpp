@@ -1120,11 +1120,15 @@ namespace dxvk {
     D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(src == nullptr || dst == nullptr))
+    if (unlikely(src == nullptr || dst == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 
-    if (unlikely(src == dst))
+    if (unlikely(src == dst)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     bool fastPath = true;
@@ -1134,16 +1138,20 @@ namespace dxvk {
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(dstTextureInfo->Desc()->Pool != D3DPOOL_DEFAULT ||
-                 srcTextureInfo->Desc()->Pool != D3DPOOL_DEFAULT))
+                 srcTextureInfo->Desc()->Pool != D3DPOOL_DEFAULT)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     Rc<DxvkImage> dstImage = dstTextureInfo->GetImage();
     Rc<DxvkImage> srcImage = srcTextureInfo->GetImage();
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (dstImage == nullptr || srcImage == nullptr)
-        return D3DERR_INVALIDCALL;
+    if (dstImage == nullptr || srcImage == nullptr) {
+      assert(false);
+      return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     const DxvkFormatInfo* dstFormatInfo = lookupFormatInfo(dstImage->info().format);
@@ -1153,11 +1161,15 @@ namespace dxvk {
     const VkImageSubresource srcSubresource = srcTextureInfo->GetSubresourceFromIndex(srcFormatInfo->aspectMask, src->GetSubresource());
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely((srcSubresource.aspectMask & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) && m_flags.test(D3D9DeviceFlag::InScene)))
+    if (unlikely((srcSubresource.aspectMask & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) && m_flags.test(D3D9DeviceFlag::InScene))) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 
-    if (unlikely(Filter != D3DTEXF_NONE && Filter != D3DTEXF_LINEAR && Filter != D3DTEXF_POINT))
+    if (unlikely(Filter != D3DTEXF_NONE && Filter != D3DTEXF_LINEAR && Filter != D3DTEXF_POINT)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     VkExtent3D srcExtent = srcImage->mipLevelExtent(srcSubresource.mipLevel);
@@ -1223,11 +1235,15 @@ namespace dxvk {
       : VkOffset3D{ int32_t(srcExtent.width),    int32_t(srcExtent.height),    1 };
 
  #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(IsBlitRegionInvalid(blitInfo.srcOffsets, srcExtent)))
+    if (unlikely(IsBlitRegionInvalid(blitInfo.srcOffsets, srcExtent))) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 
-    if (unlikely(IsBlitRegionInvalid(blitInfo.dstOffsets, dstExtent)))
+    if (unlikely(IsBlitRegionInvalid(blitInfo.dstOffsets, dstExtent))) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     VkExtent3D srcCopyExtent =
     { uint32_t(blitInfo.srcOffsets[1].x - blitInfo.srcOffsets[0].x),
@@ -1243,17 +1259,25 @@ namespace dxvk {
     bool srcIsDepth = IsDepthFormat(srcFormat);
     bool dstIsDepth = IsDepthFormat(dstFormat);
     if (unlikely(srcIsDepth || dstIsDepth)) {
-      if (unlikely(!srcIsDepth || !dstIsDepth))
+      if (unlikely(!srcIsDepth || !dstIsDepth)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(srcTextureInfo->Desc()->Discard || dstTextureInfo->Desc()->Discard))
+      if (unlikely(srcTextureInfo->Desc()->Discard || dstTextureInfo->Desc()->Discard)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(srcCopyExtent.width != srcExtent.width || srcCopyExtent.height != srcExtent.height))
+      if (unlikely(srcCopyExtent.width != srcExtent.width || srcCopyExtent.height != srcExtent.height)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(m_flags.test(D3D9DeviceFlag::InScene)))
+      if (unlikely(m_flags.test(D3D9DeviceFlag::InScene))) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
@@ -1264,17 +1288,23 @@ namespace dxvk {
     bool dstHasRTUsage = (dstTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
     bool dstIsSurface = dstTextureInfo->GetType() == D3DRTYPE_SURFACE;
     if (stretch) {
-      if (unlikely(pSourceSurface == pDestSurface))
+      if (unlikely(pSourceSurface == pDestSurface)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(dstIsDepth))
+      if (unlikely(dstIsDepth)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
       // The docs say that stretching is only allowed if the destination is either a render target surface or a render target texture.
       // However in practice, using an offscreen plain surface in D3DPOOL_DEFAULT as the destination works fine.
       // Using a texture without USAGE_RENDERTARGET as destination however does not.
-      if (unlikely(!dstIsSurface && !dstHasRTUsage))
+      if (unlikely(!dstIsSurface && !dstHasRTUsage)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     } else {
       bool srcIsSurface = srcTextureInfo->GetType() == D3DRTYPE_SURFACE;
       bool srcHasRTUsage = (srcTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
@@ -1283,8 +1313,10 @@ namespace dxvk {
       // - both destination and source are depth stencil surfaces
       // - both destination and source are offscreen plain surfaces.
       // The only way to get a surface with resource type D3DRTYPE_SURFACE without USAGE_RT or USAGE_DS is CreateOffscreenPlainSurface.
-      if (unlikely((!dstHasRTUsage && (!dstIsSurface || !srcIsSurface || srcHasRTUsage)) && !m_isD3D8Compatible))
+      if (unlikely((!dstHasRTUsage && (!dstIsSurface || !srcIsSurface || srcHasRTUsage)) && !m_isD3D8Compatible)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     fastPath &= !stretch;
@@ -1292,8 +1324,10 @@ namespace dxvk {
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (!fastPath || needsResolve) {
       // Compressed destination formats are forbidden for blits.
-      if (dstFormatInfo->flags.test(DxvkFormatFlag::BlockCompressed))
+      if (dstFormatInfo->flags.test(DxvkFormatFlag::BlockCompressed)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
@@ -2538,8 +2572,10 @@ namespace dxvk {
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::SetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(InvalidSampler(Stage)))
+    if (unlikely(InvalidSampler(Stage))) {
+      assert(false);
       return D3D_OK;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     DWORD stateSampler = RemapSamplerState(Stage);
@@ -2600,8 +2636,10 @@ namespace dxvk {
           D3DSAMPLERSTATETYPE Type,
           DWORD               Value) {
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(InvalidSampler(Sampler)))
+    if (unlikely(InvalidSampler(Sampler))) {
+      assert(false);
       return D3D_OK;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     uint32_t stateSampler = RemapSamplerState(Sampler);
@@ -2765,12 +2803,16 @@ namespace dxvk {
     D3D9DeviceLock lock = LockDevice();
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(m_state.vertexDecl == nullptr))
+    if (unlikely(m_state.vertexDecl == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
-#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+    }
 
-    if (unlikely(!PrimitiveCount))
+    if (unlikely(!PrimitiveCount)) {
+      assert(false);
       return S_OK;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     bool dynamicSysmemVBOs;
     bool dynamicSysmemIBO;
@@ -3343,8 +3385,10 @@ namespace dxvk {
     D3D9DeviceLock lock = LockDevice();
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(StreamNumber >= caps::MaxStreams))
+    if (unlikely(StreamNumber >= caps::MaxStreams)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     D3D9VertexBuffer* buffer = static_cast<D3D9VertexBuffer*>(pStreamData);
@@ -5087,8 +5131,10 @@ namespace dxvk {
     D3D9DeviceLock lock = LockDevice();
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(ppbData == nullptr))
+    if (unlikely(ppbData == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     auto& desc = *pResource->Desc();
@@ -7243,8 +7289,10 @@ namespace dxvk {
     const     uint32_t regCountHardware = DetermineHardwareRegCount<ProgramType, ConstantType>();
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     constexpr uint32_t regCountSoftware = DetermineSoftwareRegCount<ProgramType, ConstantType>();
-    if (unlikely(StartRegister + Count > regCountSoftware))
+    if (unlikely(StartRegister + Count > regCountSoftware)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     Count = UINT(
@@ -7252,12 +7300,16 @@ namespace dxvk {
         std::clamp<INT>(Count + StartRegister, 0, regCountHardware) - INT(StartRegister),
         0));
 
-    if (unlikely(Count == 0))
-      return D3D_OK;
-
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely(pConstantData == nullptr))
+    if (unlikely(Count == 0)) {
+      assert(false);
+      return D3D_OK;
+    }
+
+    if (unlikely(pConstantData == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     if (unlikely(ShouldRecord()))
