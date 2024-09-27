@@ -1250,19 +1250,12 @@ namespace dxvk {
       uint32_t(blitInfo.dstOffsets[1].y - blitInfo.dstOffsets[0].y),
       uint32_t(blitInfo.dstOffsets[1].z - blitInfo.dstOffsets[0].z) };
 
-<<<<<<< HEAD
-    bool srcIsDS = IsDepthStencilFormat(srcFormat);
-    bool dstIsDS = IsDepthStencilFormat(dstFormat);
-    if (unlikely(srcIsDS || dstIsDS)) {
-      if (unlikely(!srcIsDS || !dstIsDS))
-=======
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    bool srcIsDepth = IsDepthFormat(srcFormat);
-    bool dstIsDepth = IsDepthFormat(dstFormat);
+    bool srcIsDepth = IsDepthStencilFormat(srcFormat);
+    bool dstIsDepth = IsDepthStencilFormat(dstFormat);
     if (unlikely(srcIsDepth || dstIsDepth)) {
       if (unlikely(!srcIsDepth || !dstIsDepth)) {
         assert(false);
->>>>>>> tiw-rel-240730
         return D3DERR_INVALIDCALL;
       }
 
@@ -1295,12 +1288,8 @@ namespace dxvk {
         return D3DERR_INVALIDCALL;
       }
 
-<<<<<<< HEAD
-      if (unlikely(dstIsDS))
-=======
       if (unlikely(dstIsDepth)) {
         assert(false);
->>>>>>> tiw-rel-240730
         return D3DERR_INVALIDCALL;
       }
 
