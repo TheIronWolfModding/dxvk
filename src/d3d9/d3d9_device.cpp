@@ -1161,11 +1161,6 @@ namespace dxvk {
     const VkImageSubresource srcSubresource = srcTextureInfo->GetSubresourceFromIndex(srcFormatInfo->aspectMask, src->GetSubresource());
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    if (unlikely((srcSubresource.aspectMask & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) && m_flags.test(D3D9DeviceFlag::InScene))) {
-      assert(false);
-      return D3DERR_INVALIDCALL;
-    }
-
     if (unlikely(Filter != D3DTEXF_NONE && Filter != D3DTEXF_LINEAR && Filter != D3DTEXF_POINT)) {
       assert(false);
       return D3DERR_INVALIDCALL;
