@@ -41,7 +41,6 @@ namespace dxvk {
     m_extProviders.push_back(&VrInstance::s_instance);
     m_extProviders.push_back(&DxvkXrProvider::s_instance);
 #endif
-
     Logger::info("Built-in extension providers:");
     for (const auto& provider : m_extProviders)
       Logger::info(str::format("  ", provider->getName()));
@@ -359,6 +358,7 @@ namespace dxvk {
     str << pCallbackData->pMessage;
 
     Logger::log(logLevel, str.str());
+    ::OutputDebugStringA(str.str().c_str());
     return VK_FALSE;
   }
 

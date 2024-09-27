@@ -19,6 +19,7 @@ compiler_args = [
   '-Wno-missing-field-initializers',
   '-Wno-unused-parameter',
   '-Wno-cast-function-type', # Needed for GetProcAddress.
+  '-Wno-unused-but-set-variable', # D3D9 empty lock.
   # clang
   '-Wno-unused-private-field',
   '-Wno-microsoft-exception-spec',
@@ -160,6 +161,12 @@ else
   link_args += [
     '-static-libgcc',
     '-static-libstdc++',
+  ]
+endif
+
+if get_option('debug')
+  compiler_args += [
+    '-DGTR2_SPECIFIC_VALIDATE_PARAMS',
   ]
 endif
 

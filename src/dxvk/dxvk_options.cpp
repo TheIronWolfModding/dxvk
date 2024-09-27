@@ -13,6 +13,7 @@ namespace dxvk {
     tearFree              = config.getOption<Tristate>("dxvk.tearFree",               Tristate::Auto);
     hideIntegratedGraphics = config.getOption<bool>   ("dxvk.hideIntegratedGraphics", false);
     deviceFilter          = config.getOption<std::string>("dxvk.deviceFilter",        "");
+    forcedSampleRateShadingFactor = config.getOption<float>("dxvk.forceSampleRateShadingFactor",     1.0f);
   }
 
 }
