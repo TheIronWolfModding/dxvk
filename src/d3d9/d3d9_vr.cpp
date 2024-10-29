@@ -151,6 +151,63 @@ public:
     return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE ImportFence(HANDLE handle, uint64_t value)
+  {
+    const DxvkFenceCreateInfo fenceInfo = { value, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D11_FENCE_BIT, handle };
+    m_fence = m_device->GetDXVKDevice()->createFence(fenceInfo);
+
+    return D3D_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE SignalFence(uint64_t value)
+  {
+      m_fence->signal(value);
+      return D3D_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE GetShaderHash(IDirect3DVertexShader9 *d3dShader, char** out)
+  {
+    D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+    D3D9CommonShader const* common = shader->GetCommonShader();
+    Rc<DxvkShader> dxvkShader = common->GetShader();
+
+    const auto shaderKey = dxvkShader->getShaderKey().toString();
+    memcpy(out, shaderKey.c_str(), shaderKey.size());
+
+    return D3D_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE PatchSPIRVToVertexShader(IDirect3DVertexShader9 *d3dShader, const uint32_t* data, uint32_t size)
+  {
+      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+      D3D9CommonShader const* common = shader->GetCommonShader();
+      Rc<DxvkShader> dxvkShader = common->GetShader();
+  
+      SpirvCodeBuffer codeBuffer(size, data);
+      DxvkShaderCreateInfo info = dxvkShader->info();
+      auto codeBuf = dxvkShader->getRawCode();
+
+      // DXVK shaders copy the binding info into a more clever container
+      // We need to dig it out here and pass it into the constructor again in a DxvkBindingInfo array
+      auto bindings = dxvkShader->getBindings();
+      DxvkBindingInfo* bindingsCopy;
+
+	  if (info.bindingCount > 0) {
+        bindingsCopy = reinterpret_cast<DxvkBindingInfo*>(malloc(sizeof(DxvkBindingInfo) * info.bindingCount));
+
+        for (int i = 0; i < info.bindingCount; ++i)
+        {
+            bindingsCopy[i] = bindings.getBinding(DxvkDescriptorSets::VsAll, i);
+        }
+
+        info.bindings = bindingsCopy;
+	  }
+
+      *dxvkShader.ptr_mut() = DxvkShader(info, std::move(codeBuffer));
+
+      return D3D_OK;
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;

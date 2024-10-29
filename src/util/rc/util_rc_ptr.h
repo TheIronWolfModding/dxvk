@@ -92,6 +92,7 @@ namespace dxvk {
     T& operator *  () const { return *m_object; }
     T* operator -> () const { return  m_object; }
     T* ptr() const { return m_object; }
+    T* ptr_mut() { return m_object; }
     
     bool operator == (const Rc& other) const { return m_object == other.m_object; }
     bool operator != (const Rc& other) const { return m_object != other.m_object; }
