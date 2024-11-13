@@ -5353,15 +5353,7 @@ namespace dxvk {
     const bool directMapping = pResource->GetMapMode() == D3D9_COMMON_BUFFER_MAP_MODE_DIRECT;
     const bool needsReadback = pResource->NeedsReadback();
 
-//<<<<<<< HEAD
     uint8_t* data = nullptr;
-/*=======
-    Rc<DxvkBuffer> mappingBuffer = pResource->GetBuffer<D3D9_COMMON_BUFFER_TYPE_MAPPING>();
-
-    DxvkBufferSliceHandle physSlice;
-    void* mapPtr;
->>>>>>> tiw-rel-240926*/
-
     if ((Flags & D3DLOCK_DISCARD) && (directMapping || needsReadback)) {
       // If we're not directly mapped and don't need readback,
       // the buffer is not currently getting used anyway
@@ -5370,14 +5362,9 @@ namespace dxvk {
       // Allocate a new backing slice for the buffer and set
       // it as the 'new' mapped slice. This assumes that the
       // only way to invalidate a buffer is by mapping it.
-//<<<<<<< HEAD
       Rc<DxvkBuffer> mappingBuffer = pResource->GetBuffer<D3D9_COMMON_BUFFER_TYPE_MAPPING>();
       auto bufferSlice = pResource->DiscardMapSlice();
       data = reinterpret_cast<uint8_t*>(bufferSlice->mapPtr());
-/*=======
-      physSlice = pResource->DiscardMapSlice();
-      mapPtr = physSlice.mapPtr;
->>>>>>> tiw-rel-240926*/
 
       EmitCs([
         cBuffer      = std::move(mappingBuffer),
@@ -5394,16 +5381,12 @@ namespace dxvk {
       // Use map pointer from previous map operation. This
       // way we don't have to synchronize with the CS thread
       // if the map mode is D3DLOCK_NOOVERWRITE.
-// TODO_WIP
       if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
         data = reinterpret_cast<uint8_t*>(pResource->GetMappedSlice()->mapPtr());
-        //mapPtr = pResource->GetMappedSlice().mapPtr;
       else {
         pResource->AllocData();
-        //mapPtr = MapBuffer(pResource);
         data = reinterpret_cast<uint8_t*>(MapBuffer(pResource));
       }
-
 
       const bool readOnly = Flags & D3DLOCK_READONLY;
       // NOOVERWRITE promises that they will not write in a currently used area.
@@ -5453,9 +5436,9 @@ namespace dxvk {
     auto dstBuffer = pResource->GetBufferSlice<D3D9_COMMON_BUFFER_TYPE_REAL>();
     
     void* srcMapPtr;
-    /* if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
-      srcMapPtr = pResource->GetMappedSlice()->mapPtr;
-    else*/
+    if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
+      srcMapPtr = pResource->GetMappedSlice()->mapPtr();
+    else
       srcMapPtr = pResource->GetData();
 
     D3D9Range& range = pResource->DirtyRange();
