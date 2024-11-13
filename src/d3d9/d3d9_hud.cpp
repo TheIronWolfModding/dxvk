@@ -31,8 +31,8 @@ namespace dxvk::hud {
 
   HudTextureMemory::HudTextureMemory(D3D9DeviceEx* device)
   : m_device          (device)
-  , m_allocatedString ("")
-  , m_mappedString    ("") { }
+  , m_allocatedTexturesString ("")
+  , m_mappedTexturesString    ("") { }
 
 
   void HudTextureMemory::update(dxvk::high_resolution_clock::time_point time) {
@@ -47,8 +47,8 @@ namespace dxvk::hud {
     if (elapsed.count() < UpdateInterval)
       return;
 
-    m_allocatedString = str::format(m_maxAllocated >> 20, " MB (Used: ", m_maxUsed >> 20, " MB)");
-    m_mappedString = str::format(m_maxMapped >> 20, " MB");
+    m_allocatedTexturesString = str::format(m_maxAllocated >> 20, " MB       Used: ", m_maxUsed >> 20, " MB");
+    m_mappedTexturesString = str::format(m_maxMapped >> 20, " MB");
     m_maxAllocated = 0;
     m_maxUsed = 0;
     m_maxMapped = 0;
@@ -64,11 +64,11 @@ namespace dxvk::hud {
           HudPos              position) {
     position.y += 16;
     renderer.drawText(16, position, 0xffc0ff00u, "Mappable:");
-    renderer.drawText(16, { position.x + 120, position.y }, 0xffffffffu, m_allocatedString);
+    renderer.drawText(16, { position.x + 120, position.y }, 0xffffffffu, m_allocatedTexturesString);
 
     position.y += 20;
     renderer.drawText(16, position, 0xffc0ff00u, "Mapped:");
-    renderer.drawText(16, { position.x + 120, position.y }, 0xffffffffu, m_mappedString);
+    renderer.drawText(16, { position.x + 120, position.y }, 0xffffffffu, m_mappedTexturesString);
 
     position.y += 8;
     return position;

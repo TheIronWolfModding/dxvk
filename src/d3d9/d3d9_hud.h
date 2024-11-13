@@ -60,8 +60,10 @@ namespace dxvk::hud {
     dxvk::high_resolution_clock::time_point m_lastUpdate
       = dxvk::high_resolution_clock::now();
 
-    std::string m_allocatedString;
-    std::string m_mappedString;
+    std::string m_allocatedTexturesString;
+    std::string m_mappedTexturesString;
+    std::string m_allocatedBuffersString;
+    std::string m_mappedBuffersString;
 
   };
 
