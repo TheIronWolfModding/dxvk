@@ -53,18 +53,20 @@ namespace dxvk::hud {
 
     D3D9DeviceEx* m_device;
 
-    uint32_t m_maxAllocated = 0;
-    uint32_t m_maxUsed      = 0;
-    uint32_t m_maxMapped    = 0;
+    uint32_t m_maxTexturesAllocated = 0;
+    uint32_t m_maxTexturesUsed = 0;
+    uint32_t m_maxTexturesMapped = 0;
+    uint32_t m_maxBuffersAllocated = 0;
+    uint32_t m_maxBuffersUsed = 0;
+    uint32_t m_maxBuffersMapped = 0;
 
     dxvk::high_resolution_clock::time_point m_lastUpdate
       = dxvk::high_resolution_clock::now();
 
-    std::string m_allocatedTexturesString;
-    std::string m_mappedTexturesString;
-    std::string m_allocatedBuffersString;
-    std::string m_mappedBuffersString;
-
+    std::string m_texturesAllocatedString;
+    std::string m_texturesMappedString;
+    std::string m_buffersAllocatedString;
+    std::string m_buffersMappedString;
   };
 
 
