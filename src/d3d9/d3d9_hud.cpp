@@ -43,11 +43,9 @@ namespace dxvk::hud {
     m_maxTexturesMapped = std::max(m_maxTexturesMapped, allocator->MappedMemory());
 
     D3D9MemoryAllocator* bufferAllocator = m_device->GetBufferAllocator();
-    m_maxBuffersAllocated =
-      std::max(m_maxBuffersAllocated, bufferAllocator->AllocatedMemory());
+    m_maxBuffersAllocated = std::max(m_maxBuffersAllocated, bufferAllocator->AllocatedMemory());
     m_maxBuffersUsed = std::max(m_maxBuffersUsed, bufferAllocator->UsedMemory());
-    m_maxBuffersMapped =
-      std::max(m_maxBuffersMapped, bufferAllocator->MappedMemory());
+    m_maxBuffersMapped = std::max(m_maxBuffersMapped, bufferAllocator->MappedMemory());
 
     /*static uint32_t peakMapped = 0u;
     if (textureAllocator->MappedMemory() > peakMapped)

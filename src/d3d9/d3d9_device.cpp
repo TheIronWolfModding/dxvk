@@ -41,7 +41,6 @@ namespace dxvk {
           HWND                   hFocusWindow,
           DWORD                  BehaviorFlags,
           Rc<DxvkDevice>         dxvkDevice)
-
     : m_parent             ( pParent )
     , m_deviceType         ( DeviceType )
     , m_window             ( hFocusWindow )
@@ -1210,7 +1209,7 @@ namespace dxvk {
     if (dstImage == nullptr || srcImage == nullptr) {
       assert(false);
       return D3DERR_INVALIDCALL;
-    }
+c    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     const DxvkFormatInfo* dstFormatInfo = lookupFormatInfo(dstImage->info().format);
@@ -4687,7 +4686,6 @@ namespace dxvk {
     if (stagingBufferAllocated > MaxStagingMemoryInFlight)
       m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
   }
-
 
 
   inline bool D3D9DeviceEx::ShouldRecord() {
