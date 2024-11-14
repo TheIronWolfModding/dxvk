@@ -1001,6 +1001,9 @@ namespace dxvk {
 
     HRESULT InitialReset(D3DPRESENT_PARAMETERS* pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode);
 
+    /**
+     * \brief Returns the allocator used for unmappable system memory texture data
+     */
     D3D9MemoryAllocator* GetTextureAllocator() {
       return &m_textureMemoryAllocator;
     }
@@ -1352,8 +1355,7 @@ namespace dxvk {
     uint64_t GetCurrentSequenceNumber();
 
     /**
-     * \brief Will unmap the least recently used textures if the amount of
-     * mapped texture memory exceeds a threshold.
+     * \brief Will unmap the least recently used textures if the amount of mapped texture memory exceeds a threshold.
      */
     void UnmapTextures();
     void UnmapBuffers();
