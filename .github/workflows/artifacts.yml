@@ -35,7 +35,7 @@ jobs:
         if-no-files-found: error
 
   merge-artifacts:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [artifacts-mingw-w64]
     steps:
       - name: Get version
