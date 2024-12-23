@@ -30,6 +30,7 @@
 #include "d3d9_on_12.h"
 
 #include <cstdint>
+#include <cassert>
 #include <unordered_set>
 #include "d3d9_bridge.h"
 
@@ -1036,8 +1037,14 @@ namespace dxvk {
     /**
      * \brief Returns whether the device is currently recording a StateBlock
      */
-    bool ShouldRecord() const {
+    bool ShouldRecord() const
+    {
+      assert(m_recorder == nullptr);
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+      return false;
+#else
       return m_recorder != nullptr;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     }
 
     bool IsD3D8Compatible() const {

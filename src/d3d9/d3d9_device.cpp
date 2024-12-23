@@ -1215,7 +1215,7 @@ namespace dxvk {
     if (dstImage == nullptr || srcImage == nullptr) {
       assert(false);
       return D3DERR_INVALIDCALL;
-c    }
+    }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     const DxvkFormatInfo* dstFormatInfo = lookupFormatInfo(dstImage->info().format);
@@ -4727,14 +4727,6 @@ c    }
       m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
   }
 
-  inline bool D3D9DeviceEx::ShouldRecord() {
-    assert(m_recorder == nullptr);
-#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
-    return false;
-#else
-    return m_recorder != nullptr && !m_recorder->IsApplying();
-#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
-  }
 
   D3D9_VK_FORMAT_MAPPING D3D9DeviceEx::LookupFormat(
     D3D9Format            Format) const {
