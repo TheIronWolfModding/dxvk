@@ -247,6 +247,8 @@ namespace dxvk {
 
     VkExtent2D GetPresentExtent();
 
+    VkFullScreenExclusiveEXT PickFullscreenMode();
+
     std::string GetApiName();
 
     const Com<D3D9Surface, false>& GetFrontBuffer() const {

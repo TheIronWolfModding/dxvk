@@ -502,6 +502,7 @@ namespace dxvk {
     presenterDesc.imageExtent     = { m_desc.Width, m_desc.Height };
     presenterDesc.imageCount      = PickImageCount(m_desc.BufferCount + 1);
     presenterDesc.numFormats      = PickFormats(m_desc.Format, presenterDesc.formats);
+    presenterDesc.fullScreenExclusive = PickFullscreenMode();
 
     VkResult vr = m_presenter->recreateSwapChain(presenterDesc);
 
@@ -536,6 +537,7 @@ namespace dxvk {
     presenterDesc.imageExtent     = { m_desc.Width, m_desc.Height };
     presenterDesc.imageCount      = PickImageCount(m_desc.BufferCount + 1);
     presenterDesc.numFormats      = PickFormats(m_desc.Format, presenterDesc.formats);
+    presenterDesc.fullScreenExclusive = PickFullscreenMode();
 
     m_presenter = new Presenter(m_device, m_frameLatencySignal, presenterDesc);
     m_presenter->setFrameRateLimit(m_targetFrameRate, GetActualFrameLatency());
@@ -753,6 +755,13 @@ namespace dxvk {
           UINT                      Preferred) {
     int32_t option = m_parent->GetOptions()->numBackBuffers;
     return option > 0 ? uint32_t(option) : uint32_t(Preferred);
+  }
+
+
+  VkFullScreenExclusiveEXT D3D11SwapChain::PickFullscreenMode() {
+    return m_desc.Flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+      ? VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT
+      : VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT;
   }
 
 
