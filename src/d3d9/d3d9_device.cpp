@@ -5335,9 +5335,13 @@ namespace dxvk {
 
     auto& desc = *pResource->Desc();
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     // Ignore DISCARD if NOOVERWRITE is set
-    if (unlikely((Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE)) == (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE)))
+    if (unlikely((Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE)) == (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE))) {
+      assert(false);
       Flags &= ~D3DLOCK_DISCARD;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     // Ignore DISCARD and NOOVERWRITE if the buffer is not DEFAULT pool (tests + Halo 2)
     // The docs say DISCARD and NOOVERWRITE are ignored if the buffer is not DYNAMIC
