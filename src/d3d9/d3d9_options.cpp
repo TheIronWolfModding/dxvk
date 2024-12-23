@@ -61,7 +61,11 @@ namespace dxvk {
     this->invariantPosition             = config.getOption<bool>        ("d3d9.invariantPosition",             true);
     this->memoryTrackTest               = config.getOption<bool>        ("d3d9.memoryTrackTest",               false);
     this->supportVCache                 = config.getOption<bool>        ("d3d9.supportVCache",                 vendorId == uint32_t(DxvkGpuVendor::Nvidia));
+    
+    // GTR2_SPECIFIC: keep this in as it is enableDialogMode = False is reproducibly slightly faster.
+    // DXVK commits: d7bd3cd58e2690cf , 15db475edf99f04c0236a6 .
     this->enableDialogMode              = config.getOption<bool>        ("d3d9.enableDialogMode",              false);
+
     this->forceSamplerTypeSpecConstants = config.getOption<bool>        ("d3d9.forceSamplerTypeSpecConstants", false);
     this->forceSwapchainMSAA            = config.getOption<int32_t>     ("d3d9.forceSwapchainMSAA",            -1);
     this->forceSampleRateShading        = config.getOption<bool>        ("d3d9.forceSampleRateShading",        false);
