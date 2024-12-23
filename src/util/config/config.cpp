@@ -830,6 +830,7 @@ namespace dxvk {
     { R"(\\(PANZERS|PANZERS_Phase_2)\.exe$)", {{
       { "d3d9.deferSurfaceCreation",        "True" },
       { "d3d9.cachedDynamicBuffers",        "True" },
+      { "d3d9.enableDialogMode",            "True"   },
     }} },
     /* DC Universe Online                      *
      * Freezes after alt tabbing               */
@@ -1020,6 +1021,11 @@ namespace dxvk {
     { R"(\\DukeForever\.exe$)", {{
       { "d3d9.maxFrameRate",                "60"   },
     }} },
+    /* Indiana Jones and the Emperor's Tomb      *
+     * Fixes intro window being stuck on screen  */
+    { R"(\\indy\.exe$)", {{
+      { "d3d9.enableDialogMode",            "True" },
+    }} },
     /* Anito: Defend a Land Enraged              */
     { R"(\\Anito\.exe$)", {{
       { "d3d9.memoryTrackTest",             "True" },
@@ -1056,6 +1062,7 @@ namespace dxvk {
     /* Need for Speed III: Hot Pursuit           *
        (with the "Modern Patch")                 */
     { R"(\\nfs3\.exe$)", {{
+      { "d3d9.enableDialogMode",            "True" },
       { "d3d9.cachedDynamicBuffers",        "True" },
       { "d3d8.batching",                    "True" },
     }} },
@@ -1064,6 +1071,7 @@ namespace dxvk {
        Won't actually render anything in game     *
        without a memory limit in place            */
     { R"(\\nfs4\.exe$)", {{
+      { "d3d9.enableDialogMode",            "True" },
       { "d3d9.cachedDynamicBuffers",        "True" },
       { "d3d9.memoryTrackTest",             "True" },
       { "d3d9.maxAvailableMemory",           "256" },
