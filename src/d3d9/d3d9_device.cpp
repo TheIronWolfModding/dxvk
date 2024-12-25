@@ -593,41 +593,8 @@ namespace dxvk {
     desc.MultisampleQuality = 0;
     desc.IsBackBuffer       = FALSE;
     desc.IsAttachmentOnly   = FALSE;
-    // Docs:
-    // Textures placed in the D3DPOOL_DEFAULT pool cannot be locked
-    // unless they are dynamic textures or they are private, FOURCC, driver formats.
-    desc.IsLockable         = Pool != D3DPOOL_DEFAULT
-                            || (Usage & D3DUSAGE_DYNAMIC)
-                            || IsVendorFormat(EnumerateFormat(Format));
 
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      void* initialData = nullptr;
-
-      if (Pool == D3DPOOL_SYSTEMMEM && Levels == 1 && pSharedHandle != nullptr) {
-        initialData = *(reinterpret_cast<void**>(pSharedHandle));
-        pSharedHandle = nullptr;
-      }
-
-      if (pSharedHandle != nullptr && Pool != D3DPOOL_DEFAULT)
-        return D3DERR_INVALIDCALL;
-
-      const Com<D3D9Texture2D> texture = new D3D9Texture2D(this, &desc, pSharedHandle);
-
-      m_initializer->InitTexture(texture->GetCommonTexture(), initialData);
-      *ppTexture = texture.ref();
-
-      if (desc.Pool == D3DPOOL_DEFAULT)
-        m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateTextureFromDesc(&desc, ppTexture, pSharedHandle);
   }
 
 
@@ -3923,6 +3890,45 @@ namespace dxvk {
       m_initializer->InitTexture(surface->GetCommonTexture());
       *ppSurface = surface.ref();
       m_losableResourceCounter++;
+
+      return D3D_OK;
+    }
+    catch (const DxvkError& e) {
+      Logger::err(e.message());
+      return D3DERR_OUTOFVIDEOMEMORY;
+    }
+  }
+
+  HRESULT D3D9DeviceEx::CreateTextureFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle)
+  {
+    // Docs:
+    // Textures placed in the D3DPOOL_DEFAULT pool cannot be locked
+    // unless they are dynamic textures or they are private, FOURCC, driver formats.
+    pDesc->IsLockable       = pDesc->Pool != D3DPOOL_DEFAULT
+                            || (pDesc->Usage & D3DUSAGE_DYNAMIC)
+                            || IsVendorFormat(pDesc->Format);
+
+    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
+      return D3DERR_INVALIDCALL;
+
+    try {
+      void* initialData = nullptr;
+
+      if (pDesc->Pool == D3DPOOL_SYSTEMMEM && pDesc->MipLevels == 1 && pSharedHandle != nullptr) {
+        initialData = *(reinterpret_cast<void**>(pSharedHandle));
+        pSharedHandle = nullptr;
+      }
+
+      if (pSharedHandle != nullptr && pDesc->Pool != D3DPOOL_DEFAULT)
+        return D3DERR_INVALIDCALL;
+
+      const Com<D3D9Texture2D> texture = new D3D9Texture2D(this, pDesc, pSharedHandle);
+
+      m_initializer->InitTexture(texture->GetCommonTexture(), initialData);
+      *ppTexture = texture.ref();
+
+      if (pDesc->Pool == D3DPOOL_DEFAULT)
+        m_losableResourceCounter++;
 
       return D3D_OK;
     }

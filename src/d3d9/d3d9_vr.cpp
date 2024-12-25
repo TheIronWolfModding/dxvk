@@ -276,6 +276,26 @@ public:
     return m_device->CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
+  HRESULT STDMETHODCALLTYPE CreateMultiViewTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle, UINT Views)
+  {
+    D3D9_COMMON_TEXTURE_DESC desc;
+    desc.Width              = Width;
+    desc.Height             = Height;
+    desc.Depth              = 1;
+    desc.ArraySize          = Views;
+    desc.MipLevels          = Levels;
+    desc.Usage              = Usage;
+    desc.Format             = EnumerateFormat(Format);
+    desc.Pool               = Pool;
+    desc.Discard            = FALSE;
+    desc.MultiSample        = D3DMULTISAMPLE_NONE;
+    desc.MultisampleQuality = 0;
+    desc.IsBackBuffer       = FALSE;
+    desc.IsAttachmentOnly   = FALSE;
+
+    return m_device->CreateTextureFromDesc(&desc, ppTexture, pSharedHandle);
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;

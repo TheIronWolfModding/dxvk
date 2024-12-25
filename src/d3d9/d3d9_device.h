@@ -1059,6 +1059,7 @@ namespace dxvk {
     void RemoveMappedBuffer(D3D9CommonBuffer* pBuffer);
 
 	HRESULT CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
+    HRESULT CreateTextureFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle);
 
   private:
 
