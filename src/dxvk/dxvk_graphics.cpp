@@ -209,7 +209,8 @@ namespace dxvk {
   DxvkGraphicsPipelineFragmentOutputState::DxvkGraphicsPipelineFragmentOutputState(
     const DxvkDevice*                     device,
     const DxvkGraphicsPipelineStateInfo&  state,
-    const DxvkShader*                     fs) {
+    const DxvkShader*                     fs,
+    const DxvkShader*                     vs) {
     // Set up color formats and attachment blend states. Disable the write
     // mask for any attachment that the fragment shader does not write to.
     uint32_t fsOutputMask = fs ? fs->info().outputMask : 0u;
@@ -299,6 +300,10 @@ namespace dxvk {
     if (fs && fs->flags().test(DxvkShaderFlag::HasSampleRateShading)) {
       msInfo.sampleShadingEnable  = VK_TRUE;
       msInfo.minSampleShading     = device->config().forcedSampleRateShadingFactor;
+    }
+
+    if (vs && vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
+      rtInfo.viewMask = 0b11;
     }
 
     // Alpha to coverage is not supported with sample mask exports.
@@ -446,7 +451,7 @@ namespace dxvk {
       VK_NULL_HANDLE, 1, &info, nullptr, &m_pipeline);
 
     if (vr)
-      throw DxvkError("Failed to create vertex input pipeline library");
+      throw DxvkError("Failed to create fragment output pipeline library");
   }
 
 
@@ -956,6 +961,11 @@ namespace dxvk {
       if (m_shaders.fs->flags().test(DxvkShaderFlag::ExportsSampleMask))
         m_flags.set(DxvkGraphicsPipelineFlag::HasSampleMaskExport);
     }
+
+    // if (m_shaders.vs != nullptr) {
+    //   if (m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiview))
+    //     m_flags.set(DxvkGraphicsPipelineFlag::UsesMultiView);
+    // }
   }
   
   
@@ -1186,6 +1196,10 @@ namespace dxvk {
       if (state.rs.flatShading() && m_shaders.fs->info().flatShadingInputs)
         return false;
 
+      // if (m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiview)) {
+      //   return false;
+      // }
+
       // If dynamic multisample state is not supported and sample shading
       // is enabled, the library is compiled with a sample count of 1.
       if (m_shaders.fs->flags().test(DxvkShaderFlag::HasSampleRateShading)) {
@@ -1222,7 +1236,7 @@ namespace dxvk {
   VkPipeline DxvkGraphicsPipeline::getBasePipeline(
     const DxvkGraphicsPipelineStateInfo& state) {
     DxvkGraphicsPipelineVertexInputState    viState(m_device, state, m_shaders.vs.ptr());
-    DxvkGraphicsPipelineFragmentOutputState foState(m_device, state, m_shaders.fs.ptr());
+    DxvkGraphicsPipelineFragmentOutputState foState(m_device, state, m_shaders.fs.ptr(), m_shaders.vs.ptr());
 
     DxvkGraphicsPipelineBaseInstanceKey key;
     key.viLibrary = m_manager->createVertexInputLibrary(viState);

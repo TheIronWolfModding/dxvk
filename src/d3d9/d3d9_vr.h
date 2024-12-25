@@ -63,8 +63,9 @@ IDirect3DVR9 : public IUnknown
   virtual HRESULT STDMETHODCALLTYPE SignalFence(uint64_t value) = 0;
   virtual HRESULT STDMETHODCALLTYPE GetShaderHash(IDirect3DVertexShader9 *d3dShader, char** out) = 0;
   virtual HRESULT STDMETHODCALLTYPE PatchSPIRVToVertexShader(IDirect3DVertexShader9 *d3dShader, const uint32_t* data, uint32_t size) = 0;
+  virtual HRESULT STDMETHODCALLTYPE CreateMultiViewRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE*pSharedHandle, UINT Views) = 0;
+  virtual HRESULT STDMETHODCALLTYPE CreateMultiViewDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE*pSharedHandle, UINT Views) = 0;
 };
-
 #ifdef _MSC_VER
 struct __declspec(uuid("7e272b32-a49c-46c7-b1a4-ef52936bec87")) IDirect3DVR9;
 #else

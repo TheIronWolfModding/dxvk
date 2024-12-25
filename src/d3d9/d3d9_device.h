@@ -1058,6 +1058,8 @@ namespace dxvk {
     void TouchMappedBuffer(D3D9CommonBuffer* pBuffer);
     void RemoveMappedBuffer(D3D9CommonBuffer* pBuffer);
 
+	HRESULT CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
+
   private:
 
     DxvkCsChunkRef AllocCsChunk() {

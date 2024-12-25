@@ -80,7 +80,7 @@ namespace dxvk {
       Rc<DxvkImageView>& view = m_sampleView.Pick(Srgb);
 
       if (unlikely(view == nullptr && !IsNull()))
-        view = m_texture->CreateView(m_face, m_mipLevel, VK_IMAGE_USAGE_SAMPLED_BIT, Srgb);
+        view = m_texture->CreateView(UINT32_MAX, m_mipLevel, VK_IMAGE_USAGE_SAMPLED_BIT, Srgb);
 
       return view;
     }
@@ -90,7 +90,7 @@ namespace dxvk {
       Rc<DxvkImageView>& view = m_renderTargetView.Pick(Srgb);
 
       if (unlikely(view == nullptr && !IsNull()))
-        view = m_texture->CreateView(m_face, m_mipLevel, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, Srgb);
+        view = m_texture->CreateView(UINT32_MAX, m_mipLevel, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, Srgb);
 
       return view;
     }
@@ -103,7 +103,7 @@ namespace dxvk {
       Rc<DxvkImageView>& view = m_depthStencilView;
 
       if (unlikely(view == nullptr))
-        view = m_texture->CreateView(m_face, m_mipLevel, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false);
+        view = m_texture->CreateView(UINT32_MAX, m_mipLevel, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false);
 
       return view;
     }

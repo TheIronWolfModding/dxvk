@@ -208,6 +208,74 @@ public:
       return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE CreateMultiViewRenderTarget(
+          UINT                Width,
+          UINT                Height,
+          D3DFORMAT           Format,
+          D3DMULTISAMPLE_TYPE MultiSample,
+          DWORD               MultisampleQuality,
+          BOOL                Lockable,
+          IDirect3DSurface9** ppSurface,
+          HANDLE*             pSharedHandle,
+          UINT                Views) {
+    InitReturnPtr(ppSurface);
+
+    if (unlikely(ppSurface == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    D3D9_COMMON_TEXTURE_DESC desc;
+    desc.Width              = Width;
+    desc.Height             = Height;
+    desc.Depth              = 1;
+    desc.ArraySize          = Views;
+    desc.MipLevels          = 1;
+    desc.Usage              = D3DUSAGE_RENDERTARGET;
+    desc.Format             = EnumerateFormat(Format);
+    desc.Pool               = D3DPOOL_DEFAULT;
+    desc.Discard            = FALSE;
+    desc.MultiSample        = MultiSample;
+    desc.MultisampleQuality = MultisampleQuality;
+    desc.IsBackBuffer       = FALSE;
+    desc.IsAttachmentOnly   = TRUE;
+    desc.IsLockable         = Lockable;
+
+    return m_device->CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
+  }
+
+  HRESULT STDMETHODCALLTYPE CreateMultiViewDepthStencilSurface(
+          UINT                Width,
+          UINT                Height,
+          D3DFORMAT           Format,
+          D3DMULTISAMPLE_TYPE MultiSample,
+          DWORD               MultisampleQuality,
+          BOOL                Discard,
+          IDirect3DSurface9** ppSurface,
+          HANDLE*             pSharedHandle,
+          UINT                Views) {
+    InitReturnPtr(ppSurface);
+
+    if (unlikely(ppSurface == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    D3D9_COMMON_TEXTURE_DESC desc;
+    desc.Width              = Width;
+    desc.Height             = Height;
+    desc.Depth              = 1;
+    desc.ArraySize          = Views;
+    desc.MipLevels          = 1;
+    desc.Usage              = D3DUSAGE_DEPTHSTENCIL;
+    desc.Format             = EnumerateFormat(Format);
+    desc.Pool               = D3DPOOL_DEFAULT;
+    desc.Discard            = Discard;
+    desc.MultiSample        = MultiSample;
+    desc.MultisampleQuality = MultisampleQuality;
+    desc.IsBackBuffer       = FALSE;
+    desc.IsAttachmentOnly   = TRUE;
+    desc.IsLockable         = IsLockableDepthStencilFormat(desc.Format);
+
+    return m_device->CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;

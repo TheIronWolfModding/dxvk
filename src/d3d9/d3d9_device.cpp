@@ -3913,6 +3913,24 @@ namespace dxvk {
       dwFlags);
   }
 
+  HRESULT D3D9DeviceEx::CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
+  {
+    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
+      return D3DERR_INVALIDCALL;
+
+    try {
+      const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, nullptr, pSharedHandle);
+      m_initializer->InitTexture(surface->GetCommonTexture());
+      *ppSurface = surface.ref();
+      m_losableResourceCounter++;
+
+      return D3D_OK;
+    }
+    catch (const DxvkError& e) {
+      Logger::err(e.message());
+      return D3DERR_OUTOFVIDEOMEMORY;
+    }
+  }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::CreateRenderTargetEx(
           UINT                Width,
@@ -3945,21 +3963,7 @@ namespace dxvk {
     desc.IsAttachmentOnly   = TRUE;
     desc.IsLockable         = Lockable;
 
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, &desc, nullptr, pSharedHandle);
-      m_initializer->InitTexture(surface->GetCommonTexture());
-      *ppSurface = surface.ref();
-      m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
 
@@ -4047,21 +4051,7 @@ namespace dxvk {
     desc.IsAttachmentOnly   = TRUE;
     desc.IsLockable         = IsLockableDepthStencilFormat(desc.Format);
 
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, &desc, nullptr, pSharedHandle);
-      m_initializer->InitTexture(surface->GetCommonTexture());
-      *ppSurface = surface.ref();
-      m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
 

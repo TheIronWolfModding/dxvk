@@ -109,7 +109,8 @@ namespace dxvk {
     DxvkGraphicsPipelineFragmentOutputState(
       const DxvkDevice*                     device,
       const DxvkGraphicsPipelineStateInfo&  state,
-      const DxvkShader*                     fs);
+      const DxvkShader*                     fs,
+      const DxvkShader*                     vs);
 
     VkPipelineRenderingCreateInfo                   rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
     VkPipelineColorBlendStateCreateInfo             cbInfo = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
@@ -416,8 +417,9 @@ namespace dxvk {
       viState(device, state, shaders.vs.ptr()),
       prState(device, state, shaders.tes.ptr(), shaders.gs.ptr(), shaders.fs.ptr()),
       fsState(device, state),
-      foState(device, state, shaders.fs.ptr()),
-      scState(specConstantMask, state.sc) { }
+      foState(device, state, shaders.fs.ptr(), shaders.vs.ptr()),
+      scState(specConstantMask, state.sc)
+    { }
 
     DxvkGraphicsPipelineShaderState           shState;
     DxvkGraphicsPipelineDynamicState          dyState;

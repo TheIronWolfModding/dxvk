@@ -33,6 +33,7 @@ namespace dxvk {
     ExportsSampleMask,
     UsesFragmentCoverage,
     UsesSparseResidency,
+    UsesMultiView,
   };
 
   using DxvkShaderFlags = Flags<DxvkShaderFlag>;
