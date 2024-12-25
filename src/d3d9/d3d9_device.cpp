@@ -1074,13 +1074,13 @@ namespace dxvk {
     return m_mostRecentlyUsedSwapchain->GetFrontBufferData(pDestSurface);
   }
 
-
-  HRESULT STDMETHODCALLTYPE D3D9DeviceEx::StretchRect(
-          IDirect3DSurface9*   pSourceSurface,
+  HRESULT D3D9DeviceEx::StretchRectInternal(
+		  D3D9Surface*         src,
     const RECT*                pSourceRect,
-          IDirect3DSurface9*   pDestSurface,
+		  D3D9Surface*         dst,
     const RECT*                pDestRect,
-          D3DTEXTUREFILTERTYPE Filter) {
+          D3DTEXTUREFILTERTYPE Filter,
+          UINT                 srcLayer) {
     D3D9DeviceLock lock = LockDevice();
 
     D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
@@ -1120,6 +1120,7 @@ namespace dxvk {
       return D3DERR_INVALIDCALL;
     }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+
 
     const DxvkFormatInfo* dstFormatInfo = lookupFormatInfo(dstImage->info().format);
     const DxvkFormatInfo* srcFormatInfo = lookupFormatInfo(srcImage->info().format);
@@ -1174,7 +1175,7 @@ namespace dxvk {
     VkImageSubresourceLayers srcSubresourceLayers = {
       srcSubresource.aspectMask,
       srcSubresource.mipLevel,
-      srcSubresource.arrayLayer, 1 };
+      srcLayer != 0 ? srcLayer : srcSubresource.arrayLayer, 1 };
 
     VkImageBlit blitInfo;
     blitInfo.dstSubresource = dstSubresourceLayers;
@@ -1374,6 +1375,26 @@ namespace dxvk {
     return D3D_OK;
   }
 
+
+  HRESULT STDMETHODCALLTYPE D3D9DeviceEx::StretchRect(
+          IDirect3DSurface9*   pSourceSurface,
+    const RECT*                pSourceRect,
+          IDirect3DSurface9*   pDestSurface,
+    const RECT*                pDestRect,
+          D3DTEXTUREFILTERTYPE Filter) {
+    D3D9DeviceLock lock = LockDevice();
+
+    D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
+    D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
+
+    if (unlikely(src == nullptr || dst == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    if (unlikely(src == dst))
+      return D3DERR_INVALIDCALL;
+
+    return StretchRectInternal(src, pSourceRect, dst, pDestRect, Filter, 0);
+  }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::ColorFill(
           IDirect3DSurface9* pSurface,

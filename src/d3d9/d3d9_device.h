@@ -741,6 +741,18 @@ namespace dxvk {
             D3D9CommonTexture*      pResource,
             UINT                    Subresource);
 
+    HRESULT CopyTextureToVkImage(
+        D3D9CommonTexture* pSrcTexture,
+        Rc<DxvkImage> dstImage);
+
+    HRESULT StretchRectInternal(
+		  D3D9Surface*         src,
+    const RECT*                pSourceRect,
+		  D3D9Surface*         dst,
+    const RECT*                pDestRect,
+          D3DTEXTUREFILTERTYPE Filter,
+          UINT                 srcLayer);
+
     void UpdateTextureFromBuffer(
             D3D9CommonTexture*      pDestTexture,
             D3D9CommonTexture*      pSrcTexture,

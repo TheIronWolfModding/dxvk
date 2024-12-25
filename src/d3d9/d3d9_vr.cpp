@@ -296,6 +296,25 @@ public:
     return m_device->CreateTextureFromDesc(&desc, ppTexture, pSharedHandle);
   }
 
+  HRESULT STDMETHODCALLTYPE CopySurfaceLayers(IDirect3DSurface9 *srcSurface, IDirect3DSurface9** dsts, UINT layerCount)
+  {
+    // Assumes that `srcSurface` has `layerCount` layers and `dsts` contains `layerCount` of destination surfaces
+    D3D9DeviceLock lock = m_device->LockDevice();
+    D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
+
+    for(int i=0; i<layerCount; ++i) {
+      D3D9Surface* dst = static_cast<D3D9Surface*>(dsts[i]);
+      if (unlikely(src == nullptr || dst == nullptr))
+        return D3DERR_INVALIDCALL;
+      if (unlikely(src == dst))
+        return D3DERR_INVALIDCALL;
+
+      return m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i);
+    }
+
+    return D3D_OK;
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;
