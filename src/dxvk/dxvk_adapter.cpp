@@ -1221,6 +1221,8 @@ namespace dxvk {
       "\n  sparseResidencyAliased                 : ", features.core.features.sparseResidencyAliased ? "1" : "0",
       "\nVulkan 1.1",
       "\n  shaderDrawParameters                   : ", features.vk11.shaderDrawParameters,
+      "\n  multiView                              : ", features.vk11.multiview,
+      "\n  variablePointers                       : ", features.vk11.variablePointers,
       "\nVulkan 1.2",
       "\n  samplerMirrorClampToEdge               : ", features.vk12.samplerMirrorClampToEdge,
       "\n  drawIndirectCount                      : ", features.vk12.drawIndirectCount,

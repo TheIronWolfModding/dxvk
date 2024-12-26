@@ -116,6 +116,11 @@ namespace dxvk {
     Matrix4 InverseView;
     Matrix4 Projection;
 
+    Matrix4 WorldView2;
+    Matrix4 NormalMatrix2;
+    Matrix4 InverseView2;
+    Matrix4 Projection2;
+
     std::array<Matrix4, 8> TexcoordMatrices;
 
     D3D9ViewportInfo ViewportInfo;

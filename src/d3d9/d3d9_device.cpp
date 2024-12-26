@@ -4358,6 +4358,9 @@ namespace dxvk {
     DxvkDeviceFeatures supported = adapter->features();
     DxvkDeviceFeatures enabled = {};
 
+    enabled.vk11.multiview = VK_TRUE;
+    enabled.vk11.variablePointers = VK_TRUE;
+
     // Geometry shaders are used for some meta ops
     enabled.core.features.geometryShader = VK_TRUE;
     enabled.core.features.robustBufferAccess = VK_TRUE;
@@ -7560,14 +7563,26 @@ namespace dxvk {
 
       auto mapPtr = m_vsFixedFunction.AllocSlice();
 
-      auto WorldView    = m_state.transforms[GetTransformIndex(D3DTS_VIEW)] * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
+      auto View = m_state.transforms[GetTransformIndex(D3DTS_VIEW)];
+      auto WorldView    = View * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
+      // We're misusing D3DTS_WORLDMATRIX indices 10 and 11 to pass the view matrix and projection matrix of another view into the generated fixed-function shader
+      // This will break if software vertex processing is in use, but in our use case it is not ever enabled
+      auto View2 = m_state.transforms[GetTransformIndex(D3DTS_WORLDMATRIX(10))];
+      auto WorldView2   = View2 * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
       auto NormalMatrix = inverse(WorldView);
+      auto NormalMatrix2 = inverse(WorldView2);
+      auto Projection = m_state.transforms[GetTransformIndex(D3DTS_PROJECTION)];
+      auto Projection2 = m_state.transforms[GetTransformIndex(D3DTS_WORLDMATRIX(11))];
 
       D3D9FixedFunctionVS* data = reinterpret_cast<D3D9FixedFunctionVS*>(mapPtr);
-      data->WorldView    = WorldView;
-      data->NormalMatrix = NormalMatrix;
-      data->InverseView  = transpose(inverse(m_state.transforms[GetTransformIndex(D3DTS_VIEW)]));
-      data->Projection   = m_state.transforms[GetTransformIndex(D3DTS_PROJECTION)];
+      data->WorldView     = WorldView;
+      data->WorldView2    = WorldView2;
+      data->NormalMatrix  = NormalMatrix;
+      data->NormalMatrix2 = NormalMatrix2;
+      data->InverseView   = transpose(inverse(View));
+      data->InverseView2  = transpose(inverse(View2));
+      data->Projection    = Projection;
+      data->Projection2   = Projection2;
 
       for (uint32_t i = 0; i < data->TexcoordMatrices.size(); i++)
         data->TexcoordMatrices[i] = m_state.transforms[GetTransformIndex(D3DTS_TEXTURE0) + i];
