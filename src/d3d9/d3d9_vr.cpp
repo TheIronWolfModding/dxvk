@@ -177,6 +177,24 @@ public:
     return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE GetSPIRVShaderCode(IDirect3DVertexShader9 *d3dShader, uint32_t* out, uint32_t* size)
+  {
+      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+      D3D9CommonShader const* common = shader->GetCommonShader();
+      Rc<DxvkShader> dxvkShader = common->GetShader();
+      SpirvCodeBuffer code = dxvkShader->getRawCode();
+
+      auto c = code.data();
+      if (out != nullptr) {
+          for(int i=0; i < code.dwords(); ++i) {
+              out[i] = c[i];
+          }
+      }
+      *size = code.dwords();
+
+      return D3D_OK;
+  }
+
   HRESULT STDMETHODCALLTYPE PatchSPIRVToVertexShader(IDirect3DVertexShader9 *d3dShader, const uint32_t* data, uint32_t size)
   {
       D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
@@ -185,7 +203,6 @@ public:
   
       SpirvCodeBuffer codeBuffer(size, data);
       DxvkShaderCreateInfo info = dxvkShader->info();
-      auto codeBuf = dxvkShader->getRawCode();
 
       // DXVK shaders copy the binding info into a more clever container
       // We need to dig it out here and pass it into the constructor again in a DxvkBindingInfo array
@@ -309,7 +326,9 @@ public:
       if (unlikely(src == dst))
         return D3DERR_INVALIDCALL;
 
-      return m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i);
+      if (auto ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i); ret != D3D_OK) {
+          return ret;
+      }
     }
 
     return D3D_OK;
