@@ -153,9 +153,6 @@ namespace dxvk {
     if (hDestWindowOverride != nullptr)
       m_window = hDestWindowOverride;
 
-    if (m_window == nullptr)
-      return D3D_OK;
-
     UpdateWindowCtx();
 
     bool recreate = false;
@@ -173,6 +170,9 @@ namespace dxvk {
     m_dirty    |= recreate;
 
     m_lastDialog = m_dialog;
+
+    if (m_window == nullptr)
+      return D3D_OK;
 
 #ifdef _WIN32
     const bool useGDIFallback = m_partialCopy && !HasFrontBuffer();
