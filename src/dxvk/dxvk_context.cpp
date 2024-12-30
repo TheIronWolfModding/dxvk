@@ -1749,6 +1749,7 @@ namespace dxvk {
       attachmentInfo.imageView = mipGenerator->getDstView(i);
       renderingInfo.renderArea = scissor;
       renderingInfo.layerCount = passExtent.depth;
+      renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
       
       // Set up push constants
       DxvkMetaBlitPushConstants pushConstants = { };
@@ -2057,6 +2058,7 @@ namespace dxvk {
       VkRenderingInfo renderingInfo = { VK_STRUCTURE_TYPE_RENDERING_INFO };
       renderingInfo.renderArea.extent = { extent.width, extent.height };
       renderingInfo.layerCount = imageView->info().numLayers;
+      renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
       VkImageLayout loadLayout;
       VkImageLayout storeLayout;
@@ -2946,6 +2948,7 @@ namespace dxvk {
       VkOffset2D { 0, 0 },
       VkExtent2D { imageExtent.width, imageExtent.height } };
     renderingInfo.layerCount = pass->framebufferLayerCount();
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
     renderingInfo.colorAttachmentCount = 1;
     renderingInfo.pColorAttachments = &attachmentInfo;
 
@@ -3310,6 +3313,7 @@ namespace dxvk {
       VkRenderingInfo renderingInfo = { VK_STRUCTURE_TYPE_RENDERING_INFO };
       renderingInfo.renderArea.extent = { extent.width, extent.height };
       renderingInfo.layerCount = imageView->info().numLayers;
+      renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
       if (imageView->info().aspect & VK_IMAGE_ASPECT_COLOR_BIT) {
         clearStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -3796,6 +3800,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { mipExtent.width, mipExtent.height };
     renderingInfo.layerCount = dstSubresource.layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
     VkImageAspectFlags dstAspects = dstImage->formatInfo()->aspectMask;
 
@@ -4246,6 +4251,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { extent.width, extent.height };
     renderingInfo.layerCount = region.dstSubresource.layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
     if (dstImage->formatInfo()->aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT)
       renderingInfo.pDepthAttachment = &depthAttachment;
@@ -4420,6 +4426,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { passExtent.width, passExtent.height };
     renderingInfo.layerCount = region.dstSubresource.layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
     
     VkImageAspectFlags dstAspects = dstImage->formatInfo()->aspectMask;
 
@@ -4818,6 +4825,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { fbSize.width, fbSize.height };
     renderingInfo.layerCount = fbSize.layers;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
     if (colorInfoCount) {
       renderingInfo.colorAttachmentCount = colorInfoCount;
