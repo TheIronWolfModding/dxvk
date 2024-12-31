@@ -46,6 +46,9 @@ namespace dxvk {
     }
 
     const DxsoShaderMetaInfo& GetMeta() const { return m_meta; }
+
+    DxsoShaderMetaInfo& GetMeta_mut() { return m_meta; }
+
     const DxsoDefinedConstants& GetConstants() const { return m_constants; }
 
     D3D9ShaderMasks GetShaderMask() const { return D3D9ShaderMasks{ m_usedSamplers, m_usedRTs }; }
@@ -135,6 +138,10 @@ namespace dxvk {
     }
 
     const D3D9CommonShader* GetCommonShader() const {
+      return &m_shader;
+    }
+
+    D3D9CommonShader* GetCommonShader_mut() {
       return &m_shader;
     }
 

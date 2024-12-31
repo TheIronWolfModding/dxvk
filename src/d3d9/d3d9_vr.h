@@ -68,6 +68,8 @@ IDirect3DVR9 : public IUnknown
   virtual HRESULT STDMETHODCALLTYPE CreateMultiViewTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle, UINT Views) = 0;
   virtual HRESULT STDMETHODCALLTYPE CopySurfaceLayers(IDirect3DSurface9 *srcSurface, IDirect3DSurface9** dsts, UINT layerCount) = 0;
   virtual HRESULT STDMETHODCALLTYPE GetSPIRVShaderCode(IDirect3DVertexShader9 *d3dShader, uint32_t* out, uint32_t* size) = 0;
+  virtual HRESULT STDMETHODCALLTYPE GetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t* out) = 0;
+  virtual HRESULT STDMETHODCALLTYPE SetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t constantCount) = 0;
 };
 #ifdef _MSC_VER
 struct __declspec(uuid("7e272b32-a49c-46c7-b1a4-ef52936bec87")) IDirect3DVR9;

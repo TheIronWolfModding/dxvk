@@ -195,6 +195,22 @@ public:
       return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE GetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t* out)
+  {
+      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+      D3D9CommonShader const* common = shader->GetCommonShader();
+      *out = common->GetMeta().maxConstIndexF;
+      return D3D_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE SetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t constantCount)
+  {
+      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+      D3D9CommonShader* common = shader->GetCommonShader_mut();
+      common->GetMeta_mut().maxConstIndexF = constantCount;
+      return D3D_OK;
+  }
+
   HRESULT STDMETHODCALLTYPE PatchSPIRVToVertexShader(IDirect3DVertexShader9 *d3dShader, const uint32_t* data, uint32_t size)
   {
       D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
