@@ -729,12 +729,14 @@ namespace dxvk {
             Rc<DxvkDevice>           Device,
       const D3D9FFShaderKeyVS&       Key,
       const std::string&             Name,
+            bool                     MultiViewFF,
             D3D9FixedFunctionOptions Options);
 
     D3D9FFShaderCompiler(
             Rc<DxvkDevice>           Device,
       const D3D9FFShaderKeyFS&       Key,
       const std::string&             Name,
+            bool                     MultiViewFF,
             D3D9FixedFunctionOptions Options);
 
     Rc<DxvkShader> compile();
@@ -781,6 +783,8 @@ namespace dxvk {
     std::vector
       <DxvkBindingInfo>   m_bindings;
 
+    bool                  m_multiViewFF;
+
     uint32_t              m_inputMask = 0u;
     uint32_t              m_outputMask = 0u;
     uint32_t              m_flatShadingMask = 0u;
@@ -819,8 +823,9 @@ namespace dxvk {
           Rc<DxvkDevice>           Device,
     const D3D9FFShaderKeyVS&       Key,
     const std::string&             Name,
+          bool                     MultiViewFF,
           D3D9FixedFunctionOptions Options)
-  : m_module(spvVersion(1, 3)), m_options(Options) {
+  : m_module(spvVersion(1, 3)), m_multiViewFF(MultiViewFF), m_options(Options) {
     m_programType = DxsoProgramTypes::VertexShader;
     m_vsKey    = Key;
     m_filename = Name;
@@ -831,8 +836,9 @@ namespace dxvk {
           Rc<DxvkDevice>           Device,
     const D3D9FFShaderKeyFS&       Key,
     const std::string&             Name,
+          bool                     MultiViewFF,
           D3D9FixedFunctionOptions Options)
-  : m_module(spvVersion(1, 3)), m_options(Options) {
+  : m_module(spvVersion(1, 3)), m_multiViewFF(MultiViewFF), m_options(Options) {
     m_programType = DxsoProgramTypes::PixelShader;
     m_fsKey    = Key;
     m_filename = Name;
@@ -1664,9 +1670,11 @@ namespace dxvk {
 
     // VS Caps
     m_module.enableCapability(spv::CapabilityClipDistance);
+    if (m_multiViewFF) {
+      m_module.enableCapability(spv::CapabilityMultiView);
+      m_module.enableCapability(spv::CapabilityVariablePointers);
+    }
 
-    m_module.enableCapability(spv::CapabilityMultiView);
-    m_module.enableCapability(spv::CapabilityVariablePointers);
     uint32_t ptrType = m_module.defPointerType(m_uint32Type, spv::StorageClassInput);
     auto viewIndex = m_module.newVar(ptrType, spv::StorageClassInput);
     m_module.setDebugName(viewIndex, "ViewIndex");
@@ -1684,7 +1692,7 @@ namespace dxvk {
 
       uint32_t typePtr = m_module.defPointerType(type, spv::StorageClassUniform);
 
-      if (idx <= uint32_t(D3D9FFVSMembers::ProjMatrix)) {
+      if (m_multiViewFF && idx <= uint32_t(D3D9FFVSMembers::ProjMatrix)) {
         // Conditionally select the correct matrix
         // This is probably much slower than accessing with idx+ViewIndex*4 directly, but opAccessChain doesn't dynamically accessing into a structure
         uint32_t offset2  = m_module.constu32(idx + 4);
@@ -2522,7 +2530,7 @@ namespace dxvk {
 
     D3D9FFShaderCompiler compiler(
       pDevice->GetDXVKDevice(),
-      Key, name,
+      Key, name, pDevice->MultiViewFF(),
       pDevice->GetOptions());
 
     m_shader = compiler.compile();
@@ -2545,7 +2553,7 @@ namespace dxvk {
 
     D3D9FFShaderCompiler compiler(
       pDevice->GetDXVKDevice(),
-      Key, name,
+      Key, name, false,
       pDevice->GetOptions());
 
     m_shader = compiler.compile();

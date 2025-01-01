@@ -61,7 +61,8 @@ namespace dxvk {
     , m_flushTracker    (m_d3d9Options.reproducibleCommandStream)
     , m_d3d9Interop     ( this )
     , m_d3d9On12        ( this )
-    , m_d3d8Bridge      ( this ) {
+    , m_d3d8Bridge      ( this )
+    , m_multiViewFF     ( BehaviorFlags & 0x10000 /* Magic number to pass to the device to let it know that it should use multiview rendering for fixed-function vertex shaders */ ) {
     // If we can SWVP, then we use an extended constant set
     // as SWVP has many more slots available than HWVP.
     bool canSWVP = CanSWVP();
@@ -7559,24 +7560,28 @@ namespace dxvk {
 
       auto View = m_state.transforms[GetTransformIndex(D3DTS_VIEW)];
       auto WorldView    = View * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
-      // We're misusing D3DTS_WORLDMATRIX indices 10 and 11 to pass the view matrix and projection matrix of another view into the generated fixed-function shader
-      // This will break if software vertex processing is in use, but in our use case it is not ever enabled
-      auto View2 = m_state.transforms[GetTransformIndex(D3DTS_WORLDMATRIX(10))];
-      auto WorldView2   = View2 * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
       auto NormalMatrix = inverse(WorldView);
-      auto NormalMatrix2 = inverse(WorldView2);
       auto Projection = m_state.transforms[GetTransformIndex(D3DTS_PROJECTION)];
-      auto Projection2 = m_state.transforms[GetTransformIndex(D3DTS_WORLDMATRIX(11))];
 
       D3D9FixedFunctionVS* data = reinterpret_cast<D3D9FixedFunctionVS*>(mapPtr);
       data->WorldView     = WorldView;
-      data->WorldView2    = WorldView2;
       data->NormalMatrix  = NormalMatrix;
-      data->NormalMatrix2 = NormalMatrix2;
       data->InverseView   = transpose(inverse(View));
-      data->InverseView2  = transpose(inverse(View2));
       data->Projection    = Projection;
-      data->Projection2   = Projection2;
+
+      if (m_multiViewFF) {
+        // We're misusing D3DTS_WORLDMATRIX indices 10 and 11 to pass the view matrix and projection matrix of another view into the generated fixed-function shader
+        // This will break if software vertex processing is in use, but in our use case it is not ever enabled
+        auto View2 = m_state.transforms[GetTransformIndex(D3DTS_WORLDMATRIX(10))];
+        auto WorldView2   = View2 * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
+        auto NormalMatrix2 = inverse(WorldView2);
+        auto Projection2 = m_state.transforms[GetTransformIndex(D3DTS_WORLDMATRIX(11))];
+
+        data->WorldView2    = WorldView2;
+        data->NormalMatrix2 = NormalMatrix2;
+        data->InverseView2  = transpose(inverse(View2));
+        data->Projection2   = Projection2;
+      }
 
       for (uint32_t i = 0; i < data->TexcoordMatrices.size(); i++)
         data->TexcoordMatrices[i] = m_state.transforms[GetTransformIndex(D3DTS_TEXTURE0) + i];
