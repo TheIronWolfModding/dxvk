@@ -1571,6 +1571,11 @@ namespace dxvk {
     m_module.setDebugMemberName(structType, member++, "InverseView");
     m_module.setDebugMemberName(structType, member++, "Projection");
 
+    m_module.setDebugMemberName(structType, member++, "WorldView2");
+    m_module.setDebugMemberName(structType, member++, "Normal2");
+    m_module.setDebugMemberName(structType, member++, "InverseView2");
+    m_module.setDebugMemberName(structType, member++, "Projection2");
+
     m_module.setDebugMemberName(structType, member++, "TexcoordTransform0");
     m_module.setDebugMemberName(structType, member++, "TexcoordTransform1");
     m_module.setDebugMemberName(structType, member++, "TexcoordTransform2");
@@ -1670,15 +1675,16 @@ namespace dxvk {
 
     // VS Caps
     m_module.enableCapability(spv::CapabilityClipDistance);
+    uint32_t viewIndex;
     if (m_multiViewFF) {
       m_module.enableCapability(spv::CapabilityMultiView);
       m_module.enableCapability(spv::CapabilityVariablePointers);
-    }
 
-    uint32_t ptrType = m_module.defPointerType(m_uint32Type, spv::StorageClassInput);
-    auto viewIndex = m_module.newVar(ptrType, spv::StorageClassInput);
-    m_module.setDebugName(viewIndex, "ViewIndex");
-    m_module.decorateBuiltIn(viewIndex, spv::BuiltInViewIndex);
+	  uint32_t ptrType = m_module.defPointerType(m_uint32Type, spv::StorageClassInput);
+	  viewIndex = m_module.newVar(ptrType, spv::StorageClassInput);
+	  m_module.setDebugName(viewIndex, "ViewIndex");
+	  m_module.decorateBuiltIn(viewIndex, spv::BuiltInViewIndex);
+    }
 
     emitLightTypeDecl();
     emitBaseBufferDecl();
