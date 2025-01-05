@@ -330,6 +330,12 @@ public:
     return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE EnableMultiView(bool enable)
+  {
+      m_device->SetMultiViewFF(enable);
+      return D3D_OK;
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;
