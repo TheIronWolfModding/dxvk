@@ -12,6 +12,7 @@ namespace dxvk {
    * \c std::unique_lock, with the goal of being
    * cheaper to construct and destroy.
    */
+#ifdef GTR2_SPECIFIC_D3D9_MULTITHREADED
   class D3D9DeviceLock {
 
   public:
@@ -48,7 +49,10 @@ namespace dxvk {
     sync::RecursiveSpinlock* m_mutex;
 
   };
-
+#else
+struct D3D9DeviceLock
+{};
+#endif // GTR2_SPECIFIC_D3D9_MULTITHREADED
 
   /**
    * \brief D3D9 context lock
@@ -59,12 +63,13 @@ namespace dxvk {
 
     D3D9Multithread(
       BOOL                  Protected);
-
+#ifdef GTR2_SPECIFIC_D3D9_MULTITHREADED
     D3D9DeviceLock AcquireLock() {
       return m_protected
         ? D3D9DeviceLock(m_mutex)
         : D3D9DeviceLock();
     }
+#endif // GTR2_SPECIFIC_D3D9_MULTITHREADED
 
   private:
 

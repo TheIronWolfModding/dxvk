@@ -7,63 +7,58 @@
 
 namespace dxvk {
 
-  class DxvkInstance;
+class DxvkInstance;
 
-  /**
-   * \brief OpenXR instance
-   * 
-   * Loads OpenXR to provide access to Vulkan extension queries.
-   */
-  class DxvkXrProvider : public DxvkExtensionProvider {
-    
-  public:
-    
-    DxvkXrProvider();
-    ~DxvkXrProvider();
+/**
+ * \brief OpenXR instance
+ *
+ * Loads OpenXR to provide access to Vulkan extension queries.
+ */
+class DxvkXrProvider : public DxvkExtensionProvider
+{
 
-    std::string_view getName();
+public:
+  DxvkXrProvider();
+  ~DxvkXrProvider();
 
-    DxvkNameSet getInstanceExtensions();
+  std::string_view getName();
 
-    DxvkNameSet getDeviceExtensions(
-            uint32_t      adapterId);
-    
-    void initInstanceExtensions();
+  DxvkNameSet getInstanceExtensions();
 
-    void initDeviceExtensions(
-      const DxvkInstance* instance);
+  DxvkNameSet getDeviceExtensions(uint32_t adapterId);
 
-    static DxvkXrProvider s_instance;
+  void initInstanceExtensions();
 
-  private:
+  void initDeviceExtensions(const DxvkInstance* instance);
 
-    dxvk::mutex           m_mutex;
-    HMODULE               m_wineOxr     = nullptr;
+  static DxvkXrProvider s_instance;
 
-    bool m_loadedOxrApi      = false;
-    bool m_initializedInsExt = false;
-    bool m_initializedDevExt = false;
+private:
+  dxvk::mutex m_mutex;
+  HMODULE m_wineOxr = nullptr;
 
-    DxvkNameSet              m_insExtensions;
-    DxvkNameSet              m_devExtensions;
-    
-    DxvkNameSet queryInstanceExtensions() const;
+  bool m_loadedOxrApi = false;
+  bool m_initializedInsExt = false;
+  bool m_initializedDevExt = false;
 
-    DxvkNameSet queryDeviceExtensions() const;
+  DxvkNameSet m_insExtensions;
+  DxvkNameSet m_devExtensions;
 
-    DxvkNameSet parseExtensionList(
-      const std::string&              str) const;
-    
-    bool loadFunctions();
+  DxvkNameSet queryInstanceExtensions() const;
 
-    void shutdown();
+  DxvkNameSet queryDeviceExtensions() const;
 
-    HMODULE loadLibrary();
+  DxvkNameSet parseExtensionList(const std::string& str, bool instance) const;
 
-    void freeLibrary();
+  bool loadFunctions();
 
-    void* getSym(const char* sym);
-    
-  };
-  
+  void shutdown();
+
+  HMODULE loadLibrary();
+
+  void freeLibrary();
+
+  void* getSym(const char* sym);
+};
+
 }

@@ -178,7 +178,7 @@ namespace dxvk {
       return VK_ERROR_SURFACE_LOST_KHR;
 
     VkSurfaceFullScreenExclusiveInfoEXT fullScreenExclusiveInfo = { VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT };
-    fullScreenExclusiveInfo.fullScreenExclusive = m_fullscreenMode;
+    fullScreenExclusiveInfo.fullScreenExclusive = desc.fullScreenExclusive;
 
     VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR };
     surfaceInfo.surface = m_surface;
@@ -218,13 +218,13 @@ namespace dxvk {
     }
 
     // Select format based on swap chain properties
-    if ((status = getSupportedFormats(formats)))
+    if ((status = getSupportedFormats(formats, desc.fullScreenExclusive)))
       return status;
 
     m_info.format = pickFormat(formats.size(), formats.data(), desc.numFormats, desc.formats);
 
     // Select a present mode for the current sync interval
-    if ((status = getSupportedPresentModes(modes)))
+    if ((status = getSupportedPresentModes(modes, desc.fullScreenExclusive)))
       return status;
 
     m_info.presentMode = pickPresentMode(modes.size(), modes.data(), m_info.syncInterval);
@@ -307,7 +307,7 @@ namespace dxvk {
     m_info.imageCount = pickImageCount(minImageCount, maxImageCount, desc.imageCount);
 
     VkSurfaceFullScreenExclusiveInfoEXT fullScreenInfo = { VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT };
-    fullScreenInfo.fullScreenExclusive = m_fullscreenMode;
+    fullScreenInfo.fullScreenExclusive = desc.fullScreenExclusive;
 
     VkSwapchainPresentModesCreateInfoEXT modeInfo = { VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT };
     modeInfo.presentModeCount       = compatibleModes.size();
@@ -340,7 +340,8 @@ namespace dxvk {
       "\n  Color space:  ", m_info.format.colorSpace,
       "\n  Present mode: ", m_info.presentMode, " (dynamic: ", (dynamicModes.empty() ? "no)" : "yes)"),
       "\n  Buffer size:  ", m_info.imageExtent.width, "x", m_info.imageExtent.height,
-      "\n  Image count:  ", m_info.imageCount));
+      "\n  Image count:  ", m_info.imageCount,
+      "\n  Exclusive FS: ", desc.fullScreenExclusive));
     
     if ((status = m_vkd->vkCreateSwapchainKHR(m_vkd->device(),
         &swapInfo, nullptr, &m_swapchain)))
@@ -420,7 +421,7 @@ namespace dxvk {
       return false;
 
     std::vector<VkSurfaceFormatKHR> surfaceFormats;
-    getSupportedFormats(surfaceFormats);
+    getSupportedFormats(surfaceFormats, VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT);
 
     for (const auto& surfaceFormat : surfaceFormats) {
       if (surfaceFormat.colorSpace == colorspace)
@@ -460,11 +461,11 @@ namespace dxvk {
   }
 
 
-  VkResult Presenter::getSupportedFormats(std::vector<VkSurfaceFormatKHR>& formats) const {
+  VkResult Presenter::getSupportedFormats(std::vector<VkSurfaceFormatKHR>& formats, VkFullScreenExclusiveEXT fullScreenExclusive) const {
     uint32_t numFormats = 0;
 
     VkSurfaceFullScreenExclusiveInfoEXT fullScreenInfo = { VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT };
-    fullScreenInfo.fullScreenExclusive = m_fullscreenMode;
+    fullScreenInfo.fullScreenExclusive = fullScreenExclusive;
 
     VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR, &fullScreenInfo };
     surfaceInfo.surface = m_surface;
@@ -502,11 +503,11 @@ namespace dxvk {
   }
 
   
-  VkResult Presenter::getSupportedPresentModes(std::vector<VkPresentModeKHR>& modes) const {
+  VkResult Presenter::getSupportedPresentModes(std::vector<VkPresentModeKHR>& modes, VkFullScreenExclusiveEXT fullScreenExclusive) const {
     uint32_t numModes = 0;
 
     VkSurfaceFullScreenExclusiveInfoEXT fullScreenInfo = { VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT };
-    fullScreenInfo.fullScreenExclusive = m_fullscreenMode;
+    fullScreenInfo.fullScreenExclusive = fullScreenExclusive;
 
     VkPhysicalDeviceSurfaceInfo2KHR surfaceInfo = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR, &fullScreenInfo };
     surfaceInfo.surface = m_surface;

@@ -30,6 +30,7 @@
 #include "d3d9_on_12.h"
 
 #include <cstdint>
+#include <cassert>
 #include <unordered_set>
 #include "d3d9_bridge.h"
 
@@ -952,10 +953,15 @@ namespace dxvk {
             UINT                              Stride);
 
     void BindIndices();
-
+#ifdef GTR2_SPECIFIC_D3D9_MULTITHREADED
     D3D9DeviceLock LockDevice() {
       return m_multithread.AcquireLock();
     }
+#else
+    D3D9DeviceLock LockDevice() {
+      return D3D9DeviceLock();
+    }
+#endif // GTR2_SPECIFIC_D3D9_MULTITHREADED
 
     const D3D9Options* GetOptions() const {
       return &m_d3d9Options;
@@ -1003,8 +1009,12 @@ namespace dxvk {
     /**
      * \brief Returns the allocator used for unmappable system memory texture data
      */
-    D3D9MemoryAllocator* GetAllocator() {
-      return &m_memoryAllocator;
+    D3D9MemoryAllocator* GetTextureAllocator() {
+      return &m_textureMemoryAllocator;
+    }
+
+    D3D9MemoryAllocator* GetBufferAllocator() {
+      return &m_bufferMemoryAllocator;
     }
 
     /**
@@ -1027,8 +1037,14 @@ namespace dxvk {
     /**
      * \brief Returns whether the device is currently recording a StateBlock
      */
-    bool ShouldRecord() const {
+    bool ShouldRecord() const
+    {
+      assert(m_recorder == nullptr);
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+      return false;
+#else
       return m_recorder != nullptr;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     }
 
     bool IsD3D8Compatible() const {
@@ -1112,6 +1128,15 @@ namespace dxvk {
 
       InjectCsChunk(std::move(chunk), false);
     }
+
+    void* MapBuffer(D3D9CommonBuffer* pBuffer);
+    // TIW: unlike textures, we only consider buffer being used if it was
+    // actually mapped.  Currently that's when buffer is locked.  So, Touch is
+    // a dead code.
+    void TouchMappedBuffer(D3D9CommonBuffer* pBuffer);
+    void RemoveMappedBuffer(D3D9CommonBuffer* pBuffer);
+
+  public:
 
     DxvkCsChunkRef AllocCsChunk() {
       DxvkCsChunk* chunk = m_csChunkPool.allocChunk(DxvkCsChunkFlag::SingleUse);
@@ -1346,6 +1371,7 @@ namespace dxvk {
      * \brief Will unmap the least recently used textures if the amount of mapped texture memory exceeds a threshold.
      */
     void UnmapTextures();
+    void UnmapBuffers();
 
     /**
      * \brief Get the swapchain that was used the most recently for presenting
@@ -1404,7 +1430,8 @@ namespace dxvk {
     D3D9Adapter*                    m_adapter;
     Rc<DxvkDevice>                  m_dxvkDevice;
 
-    D3D9MemoryAllocator             m_memoryAllocator;
+    D3D9MemoryAllocator             m_textureMemoryAllocator;
+    D3D9MemoryAllocator             m_bufferMemoryAllocator;
 
     // Second memory allocator used for D3D9 shader bytecode.
     // Most games never access the stored bytecode, so putting that
@@ -1557,7 +1584,9 @@ namespace dxvk {
     D3D9SwapChainEx*                m_mostRecentlyUsedSwapchain = nullptr;
 
 #ifdef D3D9_ALLOW_UNMAPPING
-    lru_list<D3D9CommonTexture*>    m_mappedTextures;
+    lru_list<D3D9CommonTexture*>          m_mappedTextures;
+    // Only lock count is considered for buffers.
+    std::unordered_set<D3D9CommonBuffer*> m_mappedBuffers;
 #endif
 
     // m_state should be declared last (i.e. freed first), because it

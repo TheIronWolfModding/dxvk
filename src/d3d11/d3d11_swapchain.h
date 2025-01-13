@@ -170,6 +170,8 @@ namespace dxvk {
     uint32_t PickImageCount(
             UINT                      Preferred);
     
+    VkFullScreenExclusiveEXT PickFullscreenMode();
+
     std::string GetApiName() const;
 
   };

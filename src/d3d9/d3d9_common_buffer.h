@@ -5,6 +5,7 @@
 
 #include "d3d9_device_child.h"
 #include "d3d9_format.h"
+#include "d3d9_mem.h"
 
 namespace dxvk {
 
@@ -13,7 +14,8 @@ namespace dxvk {
    */
   enum D3D9_COMMON_BUFFER_MAP_MODE {
     D3D9_COMMON_BUFFER_MAP_MODE_BUFFER,
-    D3D9_COMMON_BUFFER_MAP_MODE_DIRECT
+    D3D9_COMMON_BUFFER_MAP_MODE_DIRECT,
+    D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE
   };
 
   /**
@@ -92,6 +94,10 @@ namespace dxvk {
     * \brief Determine the mapping mode of the buffer, (ie. direct mapping or backed)
     */
     D3D9_COMMON_BUFFER_MAP_MODE DetermineMapMode(const D3D9Options* options) const;
+
+    bool AllocData();
+    void* GetData(); 
+    void UnmapData() { m_data.Unmap(); }
 
     /**
     * \brief Get the mapping mode of the buffer, (ie. direct mapping or backed)
@@ -244,6 +250,7 @@ namespace dxvk {
 
     uint64_t                    m_seq = 0ull;
 
+    D3D9Memory                  m_data;
   };
 
 }

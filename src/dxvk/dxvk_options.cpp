@@ -16,6 +16,7 @@ namespace dxvk {
     zeroMappedMemory      = config.getOption<bool>    ("dxvk.zeroMappedMemory",       false);
     allowFse              = config.getOption<bool>    ("dxvk.allowFse",               false);
     deviceFilter          = config.getOption<std::string>("dxvk.deviceFilter",        "");
+    forcedSampleRateShadingFactor = config.getOption<float>("dxvk.forceSampleRateShadingFactor",     1.0f);
   }
 
 }
