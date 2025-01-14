@@ -323,6 +323,7 @@ namespace dxvk {
     bool eq = rtInfo.colorAttachmentCount     == other.rtInfo.colorAttachmentCount
            && rtInfo.depthAttachmentFormat    == other.rtInfo.depthAttachmentFormat
            && rtInfo.stencilAttachmentFormat  == other.rtInfo.stencilAttachmentFormat
+           && rtInfo.viewMask                 == other.rtInfo.viewMask
            && cbInfo.logicOpEnable            == other.cbInfo.logicOpEnable
            && cbInfo.logicOp                  == other.cbInfo.logicOp
            && cbInfo.attachmentCount          == other.cbInfo.attachmentCount
@@ -365,6 +366,7 @@ namespace dxvk {
     hash.add(uint32_t(rtInfo.colorAttachmentCount));
     hash.add(uint32_t(rtInfo.depthAttachmentFormat));
     hash.add(uint32_t(rtInfo.stencilAttachmentFormat));
+    hash.add(uint32_t(rtInfo.viewMask));
     hash.add(uint32_t(cbInfo.logicOpEnable));
     hash.add(uint32_t(cbInfo.logicOp));
     hash.add(uint32_t(cbInfo.attachmentCount));

@@ -4353,8 +4353,8 @@ namespace dxvk {
     DxvkDeviceFeatures supported = adapter->features();
     DxvkDeviceFeatures enabled = {};
 
-    enabled.vk11.multiview = VK_TRUE;
-    enabled.vk11.variablePointers = VK_TRUE;
+    enabled.vk11.multiview = supported.vk11.multiview;
+    enabled.vk11.variablePointers = supported.vk11.variablePointers;
 
     // Geometry shaders are used for some meta ops
     enabled.core.features.geometryShader = VK_TRUE;
