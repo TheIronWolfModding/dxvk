@@ -76,6 +76,8 @@ namespace dxvk {
     VkBool32                                                  nvxBinaryImport;
     VkBool32                                                  nvxImageViewHandle;
     VkBool32                                                  khrWin32KeyedMutex;
+    VkBool32                                                  multiview;
+    VkBool32                                                  variablePointers;
   };
 
 }
