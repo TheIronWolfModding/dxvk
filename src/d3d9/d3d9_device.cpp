@@ -4725,8 +4725,9 @@ namespace dxvk {
  
     // GTR2_SPECIFIC: this hangs on startup sometimes.  Philip suggested commenting out.
     // TODO_TIW: 02/22/25 - actually I can't repro the hang anymore, perhaps uncomment on next version/retest ...
-    //if (stagingBufferAllocated > MaxStagingMemoryInFlight)
-      //m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
+    // Also, don't seem to repro anymore with 561.9.0, perhaps this is driver specific.
+    if (stagingBufferAllocated > MaxStagingMemoryInFlight)
+        m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
   }
 
 
