@@ -4722,10 +4722,11 @@ namespace dxvk {
 
       ConsiderFlush(flushType);
     }
-
-    // Wait for staging memory to get recycled.
-    if (stagingBufferAllocated > MaxStagingMemoryInFlight)
-      m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
+ 
+    // GTR2_SPECIFIC: this hangs on startup sometimes.  Philip suggested commenting out.
+    // TODO_TIW: 02/22/25 - actually I can't repro the hang anymore, perhaps uncomment on next version/retest ...
+    //if (stagingBufferAllocated > MaxStagingMemoryInFlight)
+      //m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
   }
 
 

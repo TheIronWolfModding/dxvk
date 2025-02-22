@@ -1175,6 +1175,7 @@ namespace dxvk {
 
 
   void D3D9SwapChainEx::SyncFrameLatency() {
+    // GTR2_SPECIFIC: this hangs sometimes.  However, commenting this out leads to no frame limit, which is needed for physics decoupling.
     // Wait for the sync event so that we respect the maximum frame latency
     m_wctx->frameLatencySignal->wait(m_wctx->frameId - GetActualFrameLatency());
   }
