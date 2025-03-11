@@ -1083,9 +1083,6 @@ namespace dxvk {
           UINT                 srcLayer) {
     D3D9DeviceLock lock = LockDevice();
 
-    D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
-    D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
-
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(src == nullptr || dst == nullptr)) {
       assert(false);
@@ -1251,7 +1248,7 @@ namespace dxvk {
     bool dstHasRTUsage = (dstTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
     bool dstIsSurface = dstTextureInfo->GetType() == D3DRTYPE_SURFACE;
     if (stretch) {
-      if (unlikely(pSourceSurface == pDestSurface)) {
+      if (unlikely(src == dst)) {
         assert(false);
         return D3DERR_INVALIDCALL;
       }
