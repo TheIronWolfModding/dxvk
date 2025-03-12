@@ -1675,7 +1675,7 @@ namespace dxvk {
 
     // VS Caps
     m_module.enableCapability(spv::CapabilityClipDistance);
-    uint32_t viewIndex;
+    uint32_t viewIndex = 0u;
     if (m_multiViewFF) {
       m_module.enableCapability(spv::CapabilityMultiView);
       m_module.enableCapability(spv::CapabilityVariablePointers);

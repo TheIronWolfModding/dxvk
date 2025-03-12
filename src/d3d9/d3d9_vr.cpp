@@ -186,7 +186,7 @@ public:
 
       auto c = code.data();
       if (out != nullptr) {
-          for(int i=0; i < code.dwords(); ++i) {
+          for(uint32_t i=0; i < code.dwords(); ++i) {
               out[i] = c[i];
           }
       }
@@ -228,7 +228,7 @@ public:
 	  if (info.bindingCount > 0) {
         bindingsCopy = reinterpret_cast<DxvkBindingInfo*>(malloc(sizeof(DxvkBindingInfo) * info.bindingCount));
 
-        for (int i = 0; i < info.bindingCount; ++i)
+        for (uint32_t i = 0; i < info.bindingCount; ++i)
         {
             bindingsCopy[i] = bindings.getBinding(DxvkDescriptorSets::VsAll, i);
         }
@@ -315,7 +315,7 @@ public:
     D3D9DeviceLock lock = m_device->LockDevice();
     D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
 
-    for(int i=0; i<layerCount; ++i) {
+    for (uint32_t i = 0; i < layerCount; ++i) {
       D3D9Surface* dst = static_cast<D3D9Surface*>(dsts[i]);
       if (unlikely(src == nullptr || dst == nullptr))
         return D3DERR_INVALIDCALL;
