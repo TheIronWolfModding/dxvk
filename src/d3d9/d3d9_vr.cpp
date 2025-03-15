@@ -225,7 +225,7 @@ public:
       auto bindings = dxvkShader->getBindings();
       DxvkBindingInfo* bindingsCopy;
 
-	  if (info.bindingCount > 0) {
+      if (info.bindingCount > 0) {
         bindingsCopy = reinterpret_cast<DxvkBindingInfo*>(malloc(sizeof(DxvkBindingInfo) * info.bindingCount));
 
         for (uint32_t i = 0; i < info.bindingCount; ++i)
@@ -234,7 +234,7 @@ public:
         }
 
         info.bindings = bindingsCopy;
-	  }
+      }
 
       *dxvkShader.ptr_mut() = DxvkShader(info, std::move(codeBuffer));
 
