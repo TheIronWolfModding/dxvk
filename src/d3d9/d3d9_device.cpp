@@ -6518,7 +6518,7 @@ namespace dxvk {
         continue;
       }
 
-      VkImageViewType boundViewType  = D3D9CommonTexture::GetImageViewTypeFromResourceType(texture->GetType(), D3D9CommonTexture::AllLayers);
+      VkImageViewType boundViewType  = D3D9CommonTexture::GetImageViewTypeFromResourceType(texture->GetType(), texture->Desc()->ArraySize);
       VkImageViewType shaderViewType = shader->GetImageViewType(i - shaderSamplerOffset);
       if (unlikely(boundViewType != shaderViewType)) {
         m_dirtyTextures |= 1 << i;
@@ -6553,7 +6553,7 @@ namespace dxvk {
     }
 
     const D3D9CommonTexture* tex = GetCommonTexture(m_state.textures[stateSampler]);
-    VkImageViewType boundViewType  = D3D9CommonTexture::GetImageViewTypeFromResourceType(tex->GetType(), D3D9CommonTexture::AllLayers);
+    VkImageViewType boundViewType  = D3D9CommonTexture::GetImageViewTypeFromResourceType(tex->GetType(), tex->Desc()->ArraySize);
     VkImageViewType shaderViewType = shader->GetImageViewType(shaderTextureIndex);
     // D3D9 does not have 1D textures. The value of VIEW_TYPE_1D is 0
     // which is the default when there is no declaration for the type.
