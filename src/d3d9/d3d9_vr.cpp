@@ -336,6 +336,15 @@ public:
       return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE SetMultiviewSurfaceLayer(IDirect3DSurface9* pSurface, uint32_t layer)
+  {
+    if (unlikely(layer > 3 && layer < UINT32_MAX))
+        return D3DERR_INVALIDCALL;
+
+    static_cast<D3D9Surface*>(pSurface)->SetMultiviewSurfaceLayer(layer);
+    return D3D_OK;
+  }
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;

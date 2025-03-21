@@ -70,6 +70,7 @@ IDirect3DVR9 : public IUnknown
   virtual HRESULT STDMETHODCALLTYPE GetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t* out) = 0;
   virtual HRESULT STDMETHODCALLTYPE SetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t constantCount) = 0;
   virtual HRESULT STDMETHODCALLTYPE EnableMultiView(bool enable) = 0;
+  virtual HRESULT STDMETHODCALLTYPE SetMultiviewSurfaceLayer(IDirect3DSurface9* pSurface, uint32_t layer) = 0;
 };
 #ifdef _MSC_VER
 struct __declspec(uuid("7e272b32-a49c-46c7-b1a4-ef52936bec87")) IDirect3DVR9;
