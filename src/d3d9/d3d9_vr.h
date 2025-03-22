@@ -52,7 +52,6 @@ IDirect3DVR9 : public IUnknown
 
   virtual HRESULT STDMETHODCALLTYPE GetOXRVkDeviceDesc(OXR_VK_DEVICE_DESC*
                                                        vkDeviceDescOut) = 0;
-
   // Deteger's work:
   //virtual HRESULT STDMETHODCALLTYPE CopySurfaceToVulkanImage(IDirect3DSurface9 * pSurface, VkImage dst, int64_t format, uint32_t dstWidth, uint32_t dstHeight) = 0;
   //virtual HRESULT STDMETHODCALLTYPE Flush() = 0;
@@ -91,7 +90,3 @@ __CRT_UUID_DECL(IDirect3DVR9,
 
 HRESULT __stdcall Direct3DCreateVRImpl(IDirect3DDevice9* pDevice,
                                        IDirect3DVR9** pInterface);
-
-// TODO_MV:
-//HRESULT __stdcall CreateVertexShaderFromSPRIV(IDirect3DVertexShader9 *shader, const uint32_t* data, uint32_t size);
-
