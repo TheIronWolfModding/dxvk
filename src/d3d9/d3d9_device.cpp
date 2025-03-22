@@ -1109,12 +1109,13 @@ namespace dxvk {
   }
 
   HRESULT D3D9DeviceEx::StretchRectInternal(
-		  D3D9Surface*         src,
-    const RECT*                pSourceRect,
-		  D3D9Surface*         dst,
-    const RECT*                pDestRect,
-          D3DTEXTUREFILTERTYPE Filter,
-          UINT                 srcLayer) {
+      D3D9Surface*         src,
+      const RECT*          pSourceRect,
+      D3D9Surface*         dst,
+      const RECT*          pDestRect,
+      D3DTEXTUREFILTERTYPE Filter,
+      UINT                 srcLayer,
+      UINT                 dstLayer) {
     D3D9DeviceLock lock = LockDevice();
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
@@ -1201,7 +1202,7 @@ namespace dxvk {
     VkImageSubresourceLayers dstSubresourceLayers = {
       dstSubresource.aspectMask,
       dstSubresource.mipLevel,
-      dstSubresource.arrayLayer, 1 };
+      dstLayer != 0 ? dstLayer : dstSubresource.arrayLayer, 1 };
 
     VkImageSubresourceLayers srcSubresourceLayers = {
       srcSubresource.aspectMask,
@@ -1424,7 +1425,7 @@ namespace dxvk {
     if (unlikely(src == dst))
       return D3DERR_INVALIDCALL;
 
-    return StretchRectInternal(src, pSourceRect, dst, pDestRect, Filter, 0);
+    return StretchRectInternal(src, pSourceRect, dst, pDestRect, Filter, 0, 0);
   }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::ColorFill(

@@ -322,7 +322,8 @@ public:
       if (unlikely(src == dst))
         return D3DERR_INVALIDCALL;
 
-      if (auto ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i); ret != D3D_OK) {
+      HRESULT ret;
+      if (ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i, 0); ret != D3D_OK) {
           return ret;
       }
     }
@@ -330,19 +331,22 @@ public:
     return D3D_OK;
   }
 
+  HRESULT STDMETHODCALLTYPE CopySurfaceIntoLayer(IDirect3DSurface9* srcSurface,
+                                                 IDirect3DSurface9* dstMultiLayerSurface,
+                                                 UINT targetLayer)
+  {
+    D3D9DeviceLock lock = m_device->LockDevice();
+    D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
+    D3D9Surface* dst = static_cast<D3D9Surface*>(dstMultiLayerSurface);
+    auto const ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
+    return ret;
+  }
+
+
   HRESULT STDMETHODCALLTYPE EnableMultiView(bool enable)
   {
       m_device->SetMultiViewFF(enable);
       return D3D_OK;
-  }
-
-  HRESULT STDMETHODCALLTYPE SetMultiviewSurfaceLayer(IDirect3DSurface9* pSurface, uint32_t layer)
-  {
-    if (unlikely(layer > 3 && layer < UINT32_MAX))
-        return D3DERR_INVALIDCALL;
-
-    static_cast<D3D9Surface*>(pSurface)->SetMultiviewSurfaceLayer(layer);
-    return D3D_OK;
   }
 
 private:
