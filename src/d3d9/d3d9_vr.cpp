@@ -322,10 +322,9 @@ public:
       if (unlikely(src == dst))
         return D3DERR_INVALIDCALL;
 
-      HRESULT ret;
-      if (ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i, 0); ret != D3D_OK) {
-          return ret;
-      }
+      auto const ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i, 0);
+      if (FAILED(ret))
+        return ret;
     }
 
     return D3D_OK;
@@ -338,10 +337,8 @@ public:
     D3D9DeviceLock lock = m_device->LockDevice();
     D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
     D3D9Surface* dst = static_cast<D3D9Surface*>(dstMultiLayerSurface);
-    auto const ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
-    return ret;
+    return m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
   }
-
 
   HRESULT STDMETHODCALLTYPE EnableMultiView(bool enable)
   {
