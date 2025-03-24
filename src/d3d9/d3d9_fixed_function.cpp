@@ -9,6 +9,7 @@
 #include "../spirv/spirv_module.h"
 
 #include <cfloat>
+#include <assert.h>
 
 namespace dxvk {
 
@@ -1676,6 +1677,9 @@ namespace dxvk {
     // VS Caps
     m_module.enableCapability(spv::CapabilityClipDistance);
     uint32_t viewIndex = 0u;
+
+    // GTR2_SPECIFIC:
+    assert(!m_multiViewFF);
     if (m_multiViewFF) {
       m_module.enableCapability(spv::CapabilityMultiView);
       m_module.enableCapability(spv::CapabilityVariablePointers);

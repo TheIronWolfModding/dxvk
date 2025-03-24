@@ -68,7 +68,7 @@ IDirect3DVR9 : public IUnknown
   virtual HRESULT STDMETHODCALLTYPE GetSPIRVShaderCode(IDirect3DVertexShader9 *d3dShader, uint32_t* out, uint32_t* size) = 0;
   virtual HRESULT STDMETHODCALLTYPE GetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t* out) = 0;
   virtual HRESULT STDMETHODCALLTYPE SetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t constantCount) = 0;
-  virtual HRESULT STDMETHODCALLTYPE EnableMultiView(bool enable) = 0;
+  virtual HRESULT STDMETHODCALLTYPE EnableFixedFunctionMultiView(bool enable) = 0;
   virtual HRESULT STDMETHODCALLTYPE CopySurfaceIntoLayer(IDirect3DSurface9* srcSurface, IDirect3DSurface9* dstMultiLayerSurface, UINT targetLayer) = 0;
 };
 #ifdef _MSC_VER

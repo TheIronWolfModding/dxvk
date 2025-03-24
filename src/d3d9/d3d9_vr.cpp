@@ -340,7 +340,7 @@ public:
     return m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
   }
 
-  HRESULT STDMETHODCALLTYPE EnableMultiView(bool enable)
+  HRESULT STDMETHODCALLTYPE EnableFixedFunctionMultiView(bool enable)
   {
       m_device->SetMultiViewFF(enable);
       return D3D_OK;
