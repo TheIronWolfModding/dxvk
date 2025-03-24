@@ -7574,6 +7574,8 @@ namespace dxvk {
       data->InverseView   = transpose(inverse(View));
       data->Projection    = Projection;
 
+      // GTR2_SPECIFIC:
+      assert(!m_multiViewFF);
       if (m_multiViewFF) {
         // We're misusing D3DTS_WORLDMATRIX indices 10 and 11 to pass the view matrix and projection matrix of another view into the generated fixed-function shader
         // This will break if software vertex processing is in use, but in our use case it is not ever enabled
