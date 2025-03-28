@@ -5,6 +5,8 @@
 #include "dxvk_device.h"
 #include "dxvk_context.h"
 
+#include <assert.h>
+
 namespace dxvk {
   
   DxvkContext::DxvkContext(const Rc<DxvkDevice>& device, DxvkContextType type)
@@ -364,7 +366,9 @@ namespace dxvk {
       clearRect.baseArrayLayer      = 0;
       // GTR2_SPECIFIC: I don't know why VUID 3101662214/2296829979 barks here - perhaps
       // it requires that layerCount matches the rectCount?
-      // clearRect.layerCount          = imageView->info().numLayers;
+      // clearRect.layerCount          = ;
+      assert(imageView->info().numLayers == 1 ||
+             imageView->info().numLayers == 2); // Multiview.  This could be breaking cube textures, but not happening in GTR2.
       clearRect.layerCount          = 1;
 
       m_cmd->cmdClearAttachments(1, &clearInfo, 1, &clearRect);
