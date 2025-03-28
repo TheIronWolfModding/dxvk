@@ -362,7 +362,10 @@ namespace dxvk {
       clearRect.rect.extent.width   = imageView->mipLevelExtent(0).width;
       clearRect.rect.extent.height  = imageView->mipLevelExtent(0).height;
       clearRect.baseArrayLayer      = 0;
-      clearRect.layerCount          = imageView->info().numLayers;
+      // GTR2_SPECIFIC: I don't know why VUID 3101662214/2296829979 barks here - perhaps
+      // it requires that layerCount matches the rectCount?
+      // clearRect.layerCount          = imageView->info().numLayers;
+      clearRect.layerCount          = 1;
 
       m_cmd->cmdClearAttachments(1, &clearInfo, 1, &clearRect);
     } else
