@@ -17,8 +17,11 @@ namespace dxvk::caps {
   //
   // m_meta.maxConstIndexF = m_layout->floatCount;
   //
-  // and constant upload is biggest DXVK cost on the main thread.
-  constexpr uint32_t MaxFloatConstantsVS          = 136 + 12; // c136 is the last register I ever seen and 12 is highest index I know of.  See: IDirect3DDevice9Proxy::SetVertexShaderConstantI.
+  // and constant upload is one of the biggest DXVK cost on the main thread.
+  //
+  // c136 is the last register I ever seen and 12 is highest index I know of.
+  // See: IDirect3DDevice9Proxy::SetVertexShaderConstantI.
+  constexpr uint32_t MaxFloatConstantsVS          = 136 + 12;
   //constexpr uint32_t MaxFloatConstantsVS          = 256;
   constexpr uint32_t MaxFloatConstantsPS          = 224;
   constexpr uint32_t MaxOtherConstants            = 16;
