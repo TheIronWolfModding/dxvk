@@ -11,7 +11,15 @@ namespace dxvk::caps {
   constexpr uint32_t MaxTextureBlendStages        = MaxSimultaneousTextures;
   constexpr uint32_t MaxSimultaneousRenderTargets = D3D_MAX_SIMULTANEOUS_RENDERTARGETS;
 
-  constexpr uint32_t MaxFloatConstantsVS          = 256;
+  // GTR2_SPECIFIC: There are a lot of shaders that indexing to calculating, I think, lighting.
+  // However, the very worst case is c136+64.  In fact, it might be even lower.
+  // DxsoCompiler::emitRegisterPtr unfortunately maxes out the size in such case:
+  //
+  // m_meta.maxConstIndexF = m_layout->floatCount;
+  //
+  // and constant upload is biggest DXVK cost on the main thread.
+  constexpr uint32_t MaxFloatConstantsVS          = 200;
+  //constexpr uint32_t MaxFloatConstantsVS          = 256;
   constexpr uint32_t MaxFloatConstantsPS          = 224;
   constexpr uint32_t MaxOtherConstants            = 16;
   constexpr uint32_t MaxFloatConstantsSoftware    = 8192;
