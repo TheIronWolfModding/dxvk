@@ -101,6 +101,8 @@ namespace dxvk {
     template<typename Tx> bool operator == (Tx* other) const { return m_object == other; }
     template<typename Tx> bool operator != (Tx* other) const { return m_object != other; }
 
+    T* ptr_mut() { return m_object; }
+
     bool operator == (std::nullptr_t) const { return m_object == nullptr; }
     bool operator != (std::nullptr_t) const { return m_object != nullptr; }
     

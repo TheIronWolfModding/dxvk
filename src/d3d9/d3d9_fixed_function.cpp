@@ -9,6 +9,7 @@
 #include "../spirv/spirv_module.h"
 
 #include <cfloat>
+#include <assert.h>
 
 namespace dxvk {
 
@@ -599,7 +600,7 @@ namespace dxvk {
     NormalMatrix,
     InverseViewMatrix,
     ProjMatrix,
-      
+
     Texcoord0,
     Texcoord1,
     Texcoord2,

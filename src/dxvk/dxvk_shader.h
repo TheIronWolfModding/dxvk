@@ -34,6 +34,7 @@ namespace dxvk {
     UsesFragmentCoverage,
     UsesSparseResidency,
     TessellationPoints,
+    UsesMultiView,
   };
 
   using DxvkShaderFlags = Flags<DxvkShaderFlag>;
@@ -100,6 +101,22 @@ namespace dxvk {
     DxvkShader(
       const DxvkShaderCreateInfo&   info,
             SpirvCodeBuffer&&       spirv);
+
+    DxvkShader& operator=(const DxvkShader& rhs) {
+        this->m_bindingOffsets = rhs.m_bindingOffsets;
+        this->m_bindings = rhs.m_bindings;
+        this->m_code = rhs.m_code;
+        this->m_flags = rhs.m_flags;
+        this->m_hash = rhs.m_hash;
+        this->m_info = rhs.m_info;
+        this->m_key = rhs.m_key;
+        this->m_needsLibraryCompile.store(rhs.m_needsLibraryCompile.load());
+        this->m_o1IdxOffset = rhs.m_o1IdxOffset;
+        this->m_o1LocOffset = rhs.m_o1LocOffset;
+        this->m_specConstantMask = rhs.m_specConstantMask;
+
+        return *this;
+    }
 
     ~DxvkShader();
     

@@ -356,7 +356,11 @@ namespace dxvk {
 
     if (shaders.fs && shaders.fs->flags().test(DxvkShaderFlag::HasSampleRateShading)) {
       msInfo.sampleShadingEnable  = VK_TRUE;
-      msInfo.minSampleShading     = 1.0f;
+      msInfo.minSampleShading     = device->config().forcedSampleRateShadingFactor;
+    }
+
+    if (shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
+      rtInfo.viewMask = 0b11;
     }
 
     // Alpha to coverage is not supported with sample mask exports.
@@ -376,6 +380,7 @@ namespace dxvk {
     bool eq = rtInfo.colorAttachmentCount     == other.rtInfo.colorAttachmentCount
            && rtInfo.depthAttachmentFormat    == other.rtInfo.depthAttachmentFormat
            && rtInfo.stencilAttachmentFormat  == other.rtInfo.stencilAttachmentFormat
+           && rtInfo.viewMask                 == other.rtInfo.viewMask
            && cbInfo.logicOpEnable            == other.cbInfo.logicOpEnable
            && cbInfo.logicOp                  == other.cbInfo.logicOp
            && cbInfo.attachmentCount          == other.cbInfo.attachmentCount
@@ -418,6 +423,7 @@ namespace dxvk {
     hash.add(uint32_t(rtInfo.colorAttachmentCount));
     hash.add(uint32_t(rtInfo.depthAttachmentFormat));
     hash.add(uint32_t(rtInfo.stencilAttachmentFormat));
+    hash.add(uint32_t(rtInfo.viewMask));
     hash.add(uint32_t(cbInfo.logicOpEnable));
     hash.add(uint32_t(cbInfo.logicOp));
     hash.add(uint32_t(cbInfo.attachmentCount));
@@ -522,7 +528,7 @@ namespace dxvk {
       VK_NULL_HANDLE, 1, &info, nullptr, &m_pipeline);
 
     if (vr)
-      throw DxvkError("Failed to create vertex input pipeline library");
+      throw DxvkError("Failed to create fragment output pipeline library");
   }
 
 
@@ -1035,6 +1041,11 @@ namespace dxvk {
       if (m_shaders.fs->flags().test(DxvkShaderFlag::ExportsSampleMask))
         m_flags.set(DxvkGraphicsPipelineFlag::HasSampleMaskExport);
     }
+
+    // if (m_shaders.vs != nullptr) {
+    //   if (m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiview))
+    //     m_flags.set(DxvkGraphicsPipelineFlag::UsesMultiView);
+    // }
   }
   
   
@@ -1278,6 +1289,10 @@ namespace dxvk {
       // Flat shading requires patching the fragment shader
       if (state.rs.flatShading() && m_shaders.fs->info().flatShadingInputs)
         return false;
+
+      // if (m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiview)) {
+      //   return false;
+      // }
 
       // If dynamic multisample state is not supported and sample shading
       // is enabled, the library is compiled with a sample count of 1.

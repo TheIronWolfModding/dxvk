@@ -30,6 +30,7 @@
 #ifdef MSC_VER
 #pragma fenv_access (on)
 #endif
+#include <assert.h>
 
 namespace dxvk {
 
@@ -46,7 +47,8 @@ namespace dxvk {
     , m_behaviorFlags      ( BehaviorFlags )
     , m_adapter            ( pAdapter )
     , m_dxvkDevice         ( dxvkDevice )
-    , m_memoryAllocator    ( )
+    , m_textureMemoryAllocator()
+    , m_bufferMemoryAllocator()  
     , m_shaderAllocator    ( )
     , m_shaderModules      ( new D3D9ShaderModuleSet )
     , m_stagingBuffer      ( dxvkDevice, StagingBufferSize )
@@ -195,8 +197,11 @@ namespace dxvk {
     m_lastHazardsRT = 0;
   }
 
-
+  // TODO_MMF: buffer unmapping shutdown workaround.
+  bool g_shuttingDown = false;
   D3D9DeviceEx::~D3D9DeviceEx() {
+    g_shuttingDown = true;
+  
     // Avoids hanging when in this state, see comment
     // in DxvkDevice::~DxvkDevice.
     if (this_thread::isInModuleDetachment())
@@ -1167,38 +1172,50 @@ namespace dxvk {
     return m_mostRecentlyUsedSwapchain->GetFrontBufferData(pDestSurface);
   }
 
-
-  HRESULT STDMETHODCALLTYPE D3D9DeviceEx::StretchRect(
-          IDirect3DSurface9*   pSourceSurface,
-    const RECT*                pSourceRect,
-          IDirect3DSurface9*   pDestSurface,
-    const RECT*                pDestRect,
-          D3DTEXTUREFILTERTYPE Filter) {
+  HRESULT D3D9DeviceEx::StretchRectInternal(
+      D3D9Surface*         src,
+      const RECT*          pSourceRect,
+      D3D9Surface*         dst,
+      const RECT*          pDestRect,
+      D3DTEXTUREFILTERTYPE Filter,
+      UINT                 srcLayer,
+      UINT                 dstLayer) {
     D3D9DeviceLock lock = LockDevice();
 
-    D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
-    D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
-
-    if (unlikely(src == nullptr || dst == nullptr))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(src == nullptr || dst == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 
-    if (unlikely(src == dst))
+    if (unlikely(src == dst)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     bool fastPath = true;
 
     D3D9CommonTexture* dstTextureInfo = dst->GetCommonTexture();
     D3D9CommonTexture* srcTextureInfo = src->GetCommonTexture();
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(dstTextureInfo->Desc()->Pool != D3DPOOL_DEFAULT ||
-                 srcTextureInfo->Desc()->Pool != D3DPOOL_DEFAULT))
+                 srcTextureInfo->Desc()->Pool != D3DPOOL_DEFAULT)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     Rc<DxvkImage> dstImage = dstTextureInfo->GetImage();
     Rc<DxvkImage> srcImage = srcTextureInfo->GetImage();
 
-    if (dstImage == nullptr || srcImage == nullptr)
-        return D3DERR_INVALIDCALL;
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (dstImage == nullptr || srcImage == nullptr) {
+      assert(false);
+      return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     const DxvkFormatInfo* dstFormatInfo = lookupFormatInfo(dstImage->info().format);
     const DxvkFormatInfo* srcFormatInfo = lookupFormatInfo(srcImage->info().format);
@@ -1206,8 +1223,12 @@ namespace dxvk {
     const VkImageSubresource dstSubresource = dstTextureInfo->GetSubresourceFromIndex(dstFormatInfo->aspectMask, dst->GetSubresource());
     const VkImageSubresource srcSubresource = srcTextureInfo->GetSubresourceFromIndex(srcFormatInfo->aspectMask, src->GetSubresource());
 
-    if (unlikely(Filter != D3DTEXF_NONE && Filter != D3DTEXF_LINEAR && Filter != D3DTEXF_POINT))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(Filter != D3DTEXF_NONE && Filter != D3DTEXF_LINEAR && Filter != D3DTEXF_POINT)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     VkExtent3D srcExtent = srcImage->mipLevelExtent(srcSubresource.mipLevel);
     VkExtent3D dstExtent = dstImage->mipLevelExtent(dstSubresource.mipLevel);
@@ -1247,12 +1268,12 @@ namespace dxvk {
     VkImageSubresourceLayers dstSubresourceLayers = {
       dstSubresource.aspectMask,
       dstSubresource.mipLevel,
-      dstSubresource.arrayLayer, 1 };
+      dstLayer != 0 ? dstLayer : dstSubresource.arrayLayer, 1 };
 
     VkImageSubresourceLayers srcSubresourceLayers = {
       srcSubresource.aspectMask,
       srcSubresource.mipLevel,
-      srcSubresource.arrayLayer, 1 };
+      srcLayer != 0 ? srcLayer : srcSubresource.arrayLayer, 1 };
 
     VkImageBlit blitInfo;
     blitInfo.dstSubresource = dstSubresourceLayers;
@@ -1274,12 +1295,17 @@ namespace dxvk {
       ? VkOffset3D{ int32_t(pSourceRect->right), int32_t(pSourceRect->bottom), 1 }
       : VkOffset3D{ int32_t(srcExtent.width),    int32_t(srcExtent.height),    1 };
 
-    if (unlikely(IsBlitRegionInvalid(blitInfo.srcOffsets, srcExtent)))
+ #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(IsBlitRegionInvalid(blitInfo.srcOffsets, srcExtent))) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 
-    if (unlikely(IsBlitRegionInvalid(blitInfo.dstOffsets, dstExtent)))
+    if (unlikely(IsBlitRegionInvalid(blitInfo.dstOffsets, dstExtent))) {
+      assert(false);
       return D3DERR_INVALIDCALL;
-
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     VkExtent3D srcCopyExtent =
     { uint32_t(blitInfo.srcOffsets[1].x - blitInfo.srcOffsets[0].x),
       uint32_t(blitInfo.srcOffsets[1].y - blitInfo.srcOffsets[0].y),
@@ -1293,36 +1319,52 @@ namespace dxvk {
     bool srcIsDS = IsDepthStencilFormat(srcFormat);
     bool dstIsDS = IsDepthStencilFormat(dstFormat);
     if (unlikely(srcIsDS || dstIsDS)) {
-      if (unlikely(!srcIsDS || !dstIsDS))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+      if (unlikely(!srcIsDS || !dstIsDS)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(srcTextureInfo->Desc()->Discard || dstTextureInfo->Desc()->Discard))
+      if (unlikely(srcTextureInfo->Desc()->Discard || dstTextureInfo->Desc()->Discard)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(srcCopyExtent.width != srcExtent.width || srcCopyExtent.height != srcExtent.height))
+      if (unlikely(srcCopyExtent.width != srcExtent.width || srcCopyExtent.height != srcExtent.height)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
-
-      if (unlikely(m_flags.test(D3D9DeviceFlag::InScene)))
+      }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+      if (unlikely(m_flags.test(D3D9DeviceFlag::InScene))) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     }
 
     // Copies would only work if the extents match. (ie. no stretching)
     bool stretch = srcCopyExtent != dstCopyExtent;
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     bool dstHasRTUsage = (dstTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
     bool dstIsSurface = dstTextureInfo->GetType() == D3DRTYPE_SURFACE;
     if (stretch) {
-      if (unlikely(pSourceSurface == pDestSurface))
+      if (unlikely(src == dst)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
-      if (unlikely(dstIsDS))
+      if (unlikely(dstIsDS)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
 
       // The docs say that stretching is only allowed if the destination is either a render target surface or a render target texture.
       // However in practice, using an offscreen plain surface in D3DPOOL_DEFAULT as the destination works fine.
       // Using a texture without USAGE_RENDERTARGET as destination however does not.
-      if (unlikely(!dstIsSurface && !dstHasRTUsage))
+      if (unlikely(!dstIsSurface && !dstHasRTUsage)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     } else {
       bool srcIsSurface = srcTextureInfo->GetType() == D3DRTYPE_SURFACE;
       bool srcHasRTUsage = (srcTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
@@ -1331,17 +1373,23 @@ namespace dxvk {
       // - both destination and source are depth stencil surfaces
       // - both destination and source are offscreen plain surfaces.
       // The only way to get a surface with resource type D3DRTYPE_SURFACE without USAGE_RT or USAGE_DS is CreateOffscreenPlainSurface.
-      if (unlikely((!dstHasRTUsage && (!dstIsSurface || !srcIsSurface || srcHasRTUsage)) && !m_isD3D8Compatible))
+      if (unlikely((!dstHasRTUsage && (!dstIsSurface || !srcIsSurface || srcHasRTUsage)) && !m_isD3D8Compatible)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     }
-
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     fastPath &= !stretch;
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (!fastPath || needsResolve) {
       // Compressed destination formats are forbidden for blits.
-      if (dstFormatInfo->flags.test(DxvkFormatFlag::BlockCompressed))
+      if (dstFormatInfo->flags.test(DxvkFormatFlag::BlockCompressed)) {
+        assert(false);
         return D3DERR_INVALIDCALL;
+      }
     }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     auto EmitResolveCS = [&](const Rc<DxvkImage>& resolveDst, bool intermediate) {
       VkImageResolve region;
@@ -1433,6 +1481,27 @@ namespace dxvk {
     return D3D_OK;
   }
 
+
+  HRESULT STDMETHODCALLTYPE D3D9DeviceEx::StretchRect(
+          IDirect3DSurface9*   pSourceSurface,
+    const RECT*                pSourceRect,
+          IDirect3DSurface9*   pDestSurface,
+    const RECT*                pDestRect,
+          D3DTEXTUREFILTERTYPE Filter) {
+    D3D9DeviceLock lock = LockDevice();
+
+    D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
+    D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(src == nullptr || dst == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    if (unlikely(src == dst))
+      return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+
+    return StretchRectInternal(src, pSourceRect, dst, pDestRect, Filter, 0, 0);
+  }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::ColorFill(
           IDirect3DSurface9* pSurface,
@@ -2678,8 +2747,12 @@ namespace dxvk {
 
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::SetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
-    if (unlikely(InvalidSampler(Stage)))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(InvalidSampler(Stage))) {
+      assert(false);
       return D3D_OK;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     DWORD stateSampler = RemapSamplerState(Stage);
 
@@ -2738,8 +2811,12 @@ namespace dxvk {
           DWORD               Sampler,
           D3DSAMPLERSTATETYPE Type,
           DWORD               Value) {
-    if (unlikely(InvalidSampler(Sampler)))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(InvalidSampler(Sampler))) {
+      assert(false);
       return D3D_OK;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     uint32_t stateSampler = RemapSamplerState(Sampler);
 
@@ -2904,11 +2981,17 @@ namespace dxvk {
           UINT             PrimitiveCount) {
     D3D9DeviceLock lock = LockDevice();
 
-    if (unlikely(m_state.vertexDecl == nullptr))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(m_state.vertexDecl == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
 
-    if (unlikely(!PrimitiveCount))
+    if (unlikely(!PrimitiveCount)) {
+      assert(false);
       return S_OK;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     bool dynamicSysmemVBOs;
     bool dynamicSysmemIBO;
@@ -3185,7 +3268,10 @@ namespace dxvk {
         GetCommonShader(m_state.pixelShader));
     }
 
-    if (dst->GetMapMode() == D3D9_COMMON_BUFFER_MAP_MODE_BUFFER) {
+    // TODO_MMF: I think this will be broken, need advice.  Luckily this is not
+    // hit in GTR2.
+    if (dst->GetMapMode() == D3D9_COMMON_BUFFER_MAP_MODE_BUFFER
+        || dst->GetMapMode() == D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE) {
       uint32_t copySize = VertexCount * decl->GetSize(0);
 
       EmitCs([
@@ -3529,8 +3615,12 @@ namespace dxvk {
           UINT                    Stride) {
     D3D9DeviceLock lock = LockDevice();
 
-    if (unlikely(StreamNumber >= caps::MaxStreams))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(StreamNumber >= caps::MaxStreams)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     D3D9VertexBuffer* buffer = static_cast<D3D9VertexBuffer*>(pStreamData);
 
@@ -4098,6 +4188,25 @@ namespace dxvk {
       dwFlags);
   }
 
+  HRESULT D3D9DeviceEx::CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
+  {
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
+      return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+    try {
+      const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, IsExtended(), nullptr, pSharedHandle);
+      m_initializer->InitTexture(surface->GetCommonTexture());
+      *ppSurface = surface.ref();
+      m_losableResourceCounter++;
+
+      return D3D_OK;
+    }
+    catch (const DxvkError& e) {
+      Logger::err(e.message());
+      return D3DERR_OUTOFVIDEOMEMORY;
+    }
+  }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::CreateRenderTargetEx(
           UINT                Width,
@@ -4139,21 +4248,7 @@ namespace dxvk {
     desc.IsAttachmentOnly   = TRUE;
     desc.IsLockable         = Lockable;
 
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_SURFACE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, &desc, IsExtended(), nullptr, pSharedHandle);
-      m_initializer->InitTexture(surface->GetCommonTexture());
-      *ppSurface = surface.ref();
-      m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
 
@@ -4241,21 +4336,7 @@ namespace dxvk {
     desc.IsAttachmentOnly   = TRUE;
     desc.IsLockable         = IsLockableDepthStencilFormat(desc.Format);
 
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_SURFACE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, &desc, IsExtended(), nullptr, pSharedHandle);
-      m_initializer->InitTexture(surface->GetCommonTexture());
-      *ppSurface = surface.ref();
-      m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
 
@@ -4519,6 +4600,9 @@ namespace dxvk {
     DxvkDeviceFeatures supported = adapter->features();
     DxvkDeviceFeatures enabled = {};
 
+    enabled.vk11.multiview = supported.vk11.multiview;
+    enabled.vk11.variablePointers = supported.vk11.variablePointers;
+
     // Geometry shaders are used for some meta ops
     enabled.core.features.geometryShader = VK_TRUE;
     enabled.core.features.robustBufferAccess = VK_TRUE;
@@ -4691,10 +4775,12 @@ namespace dxvk {
 
       ConsiderFlush(flushType);
     }
-
-    // Wait for staging memory to get recycled.
+ 
+    // GTR2_SPECIFIC: this hangs on startup sometimes.  Philip suggested commenting out.
+    // TODO_TIW: 02/22/25 - actually I can't repro the hang anymore, perhaps uncomment on next version/retest ...
+    // Also, don't seem to repro anymore with 561.9.0, perhaps this is driver specific.
     if (stagingBufferAllocated > MaxStagingMemoryInFlight)
-      m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
+        m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
   }
 
 
@@ -4757,7 +4843,7 @@ namespace dxvk {
       return 0;
 
     std::array<uint32_t, 3> offsets = { pBox->Front, pBox->Top, pBox->Left };
-
+    
     uint32_t elementSize = 1;
 
     if (FormatInfo != nullptr) {
@@ -4994,6 +5080,7 @@ namespace dxvk {
 
     // Make sure the amount of mapped texture memory stays below the threshold.
     UnmapTextures();
+    UnmapBuffers();
 
     const bool readOnly = Flags & D3DLOCK_READONLY;
     const bool noDirtyUpdate = Flags & D3DLOCK_NO_DIRTY_UPDATE;
@@ -5085,6 +5172,7 @@ namespace dxvk {
       pResource->DestroyBuffer();
 
     UnmapTextures();
+    UnmapBuffers();
     return D3D_OK;
   }
 
@@ -5261,6 +5349,7 @@ namespace dxvk {
       });
     }
     UnmapTextures();
+    UnmapBuffers();
     ConsiderFlush(GpuFlushType::ImplicitWeakHint);
   }
 
@@ -5286,14 +5375,22 @@ namespace dxvk {
           DWORD                   Flags) {
     D3D9DeviceLock lock = LockDevice();
 
-    if (unlikely(ppbData == nullptr))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(ppbData == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     auto& desc = *pResource->Desc();
 
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     // Ignore DISCARD if NOOVERWRITE is set
-    if (unlikely((Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE)) == (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE)))
+    if (unlikely((Flags & (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE)) == (D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE))) {
+      assert(false);
       Flags &= ~D3DLOCK_DISCARD;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     // Ignore DISCARD and NOOVERWRITE if the buffer is not DEFAULT pool (tests + Halo 2)
     // The docs say DISCARD and NOOVERWRITE are ignored if the buffer is not DYNAMIC
@@ -5344,7 +5441,6 @@ namespace dxvk {
     const bool needsReadback = pResource->NeedsReadback();
 
     uint8_t* data = nullptr;
-
     if ((Flags & D3DLOCK_DISCARD) && (directMapping || needsReadback)) {
       // If we're not directly mapped and don't need readback,
       // the buffer is not currently getting used anyway
@@ -5372,7 +5468,12 @@ namespace dxvk {
       // Use map pointer from previous map operation. This
       // way we don't have to synchronize with the CS thread
       // if the map mode is D3DLOCK_NOOVERWRITE.
-      data = reinterpret_cast<uint8_t*>(pResource->GetMappedSlice()->mapPtr());
+      if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
+        data = reinterpret_cast<uint8_t*>(pResource->GetMappedSlice()->mapPtr());
+      else {
+        pResource->AllocData();
+        data = reinterpret_cast<uint8_t*>(MapBuffer(pResource));
+      }
 
       const bool readOnly = Flags & D3DLOCK_READONLY;
       // NOOVERWRITE promises that they will not write in a currently used area.
@@ -5408,7 +5509,7 @@ namespace dxvk {
     // We just mapped a buffer which may have come with an address space cost.
     // Unmap textures if the amount of mapped texture memory is exceeding the threshold.
     UnmapTextures();
-
+    UnmapBuffers();
     return D3D_OK;
   }
 
@@ -5420,12 +5521,17 @@ namespace dxvk {
     WaitStagingBuffer();
 
     auto dstBuffer = pResource->GetBufferSlice<D3D9_COMMON_BUFFER_TYPE_REAL>();
-    auto srcSlice = pResource->GetMappedSlice();
+    
+    void* srcMapPtr;
+    if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
+      srcMapPtr = pResource->GetMappedSlice()->mapPtr();
+    else
+      srcMapPtr = pResource->GetData();
 
     D3D9Range& range = pResource->DirtyRange();
 
     D3D9BufferSlice slice = AllocStagingBuffer(range.max - range.min);
-    void* srcData = reinterpret_cast<uint8_t*>(srcSlice->mapPtr()) + range.min;
+    void* srcData = reinterpret_cast<uint8_t*>(srcMapPtr) + range.min;
     memcpy(slice.mapPtr, srcData, range.max - range.min);
 
     EmitCs([
@@ -5446,6 +5552,7 @@ namespace dxvk {
     TrackBufferMappingBufferSequenceNumber(pResource);
 
     UnmapTextures();
+    UnmapBuffers();
     ConsiderFlush(GpuFlushType::ImplicitWeakHint);
     return D3D_OK;
   }
@@ -5459,7 +5566,8 @@ namespace dxvk {
       return D3D_OK;
 
     // Nothing else to do for directly mapped buffers. Those were already written.
-    if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_BUFFER)
+    if (pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_BUFFER
+      && pResource->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
       return D3D_OK;
 
     // There is no part of the buffer that hasn't been uploaded yet.
@@ -7700,6 +7808,7 @@ namespace dxvk {
       const T*    pConstantData,
             UINT  Count) {
     const     uint32_t regCountHardware = DetermineHardwareRegCount<ProgramType, ConstantType>();
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     constexpr uint32_t regCountSoftware = DetermineSoftwareRegCount<ProgramType, ConstantType>();
 
     // Error out in case of StartRegister + Count overflow
@@ -7708,17 +7817,25 @@ namespace dxvk {
 
     if (unlikely(StartRegister + Count > regCountSoftware))
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     Count = UINT(
       std::max<INT>(
         std::clamp<INT>(Count + StartRegister, 0, regCountHardware) - INT(StartRegister),
         0));
 
-    if (unlikely(Count == 0))
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(Count == 0)) {
+      assert(false);
       return D3D_OK;
+    }
 
-    if (unlikely(pConstantData == nullptr))
+    if (unlikely(pConstantData == nullptr)) {
+      assert(false);
       return D3DERR_INVALIDCALL;
+    }
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     if (unlikely(ShouldRecord()))
       return m_recorder->SetShaderConstants<ProgramType, ConstantType, T>(
@@ -8608,14 +8725,14 @@ namespace dxvk {
     // Will only be called inside the device lock
 
 #ifdef D3D9_ALLOW_UNMAPPING
-    uint32_t mappedMemory = m_memoryAllocator.MappedMemory();
+    uint32_t mappedMemory = m_textureMemoryAllocator.MappedMemory();
     if (likely(mappedMemory < uint32_t(m_d3d9Options.textureMemory)))
       return;
 
     uint32_t threshold = (m_d3d9Options.textureMemory / 4) * 3;
 
     auto iter = m_mappedTextures.leastRecentlyUsedIter();
-    while (m_memoryAllocator.MappedMemory() >= threshold && iter != m_mappedTextures.leastRecentlyUsedEndIter()) {
+    while (m_textureMemoryAllocator.MappedMemory() >= threshold && iter != m_mappedTextures.leastRecentlyUsedEndIter()) {
       if (unlikely((*iter)->IsAnySubresourceLocked() != 0)) {
         iter++;
         continue;
@@ -8626,6 +8743,74 @@ namespace dxvk {
     }
 #endif
   }
+
+  void* D3D9DeviceEx::MapBuffer(D3D9CommonBuffer* pBuffer)
+  {
+    // Will only be called inside the device lock
+    void* ptr = pBuffer->GetData();
+
+#ifdef D3D9_ALLOW_UNMAPPING
+    if (pBuffer->GetMapMode() ==
+        D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE) {
+      m_mappedBuffers.insert(pBuffer);
+    }
+#endif
+
+    return ptr;
+  }
+
+  void
+  D3D9DeviceEx::TouchMappedBuffer(D3D9CommonBuffer* pBuffer)
+  {
+#ifdef D3D9_ALLOW_UNMAPPING
+    if (pBuffer->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
+      return;
+
+    D3D9DeviceLock lock = LockDevice();
+    assert(false);
+    // TODO_MMF: dead code
+    //m_mappedBuffers.touch(pBuffer);
+#endif
+  }
+
+  void D3D9DeviceEx::RemoveMappedBuffer(D3D9CommonBuffer* pBuffer)
+  {
+#ifdef D3D9_ALLOW_UNMAPPING
+    if (pBuffer->GetMapMode() != D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE)
+      return;
+    
+    if (!g_shuttingDown) {
+      D3D9DeviceLock lock = LockDevice();
+      m_mappedBuffers.erase(pBuffer);
+    }
+#endif
+  }
+
+  void
+  D3D9DeviceEx::UnmapBuffers()
+  {
+    // Will only be called inside the device lock
+#ifdef D3D9_ALLOW_UNMAPPING
+    uint32_t mappedMemory = m_bufferMemoryAllocator.MappedMemory();
+    if (likely(mappedMemory < uint32_t(m_d3d9Options.bufferMemory)))
+      return;
+
+    uint32_t threshold = (m_d3d9Options.bufferMemory / 4) * 3;
+
+    auto iter = m_mappedBuffers.begin();
+    while (m_bufferMemoryAllocator.MappedMemory() >= threshold && iter != m_mappedBuffers.end()) {
+      if (unlikely((*iter)->GetLockCount() != 0)) {
+        iter++;
+        continue;
+      }
+
+      (*iter)->UnmapData();
+      iter = m_mappedBuffers.erase(iter);
+    }
+#endif
+  }
+
+
 
   ////////////////////////////////////
   // D3D9 Device Lost

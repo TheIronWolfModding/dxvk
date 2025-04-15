@@ -144,6 +144,9 @@ namespace dxvk {
 
         if (ins.arg(1) == spv::CapabilityFragmentFullyCoveredEXT)
           m_flags.set(DxvkShaderFlag::UsesFragmentCoverage);
+
+        if (ins.arg(1) == spv::CapabilityMultiView)
+          m_flags.set(DxvkShaderFlag::UsesMultiView);
       }
 
       if (ins.opCode() == spv::OpVariable) {
@@ -1534,8 +1537,10 @@ namespace dxvk {
       rsInfo.depthClampEnable = VK_FALSE;
     }
 
-    // Only the view mask is used as input, and since we do not use MultiView, it is always 0
     VkPipelineRenderingCreateInfo rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
+    if (m_shaders.vs && m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
+        rtInfo.viewMask = 0b11;
+    }
 
     VkGraphicsPipelineLibraryCreateInfoEXT libInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT, &rtInfo };
     libInfo.flags             = VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT;
@@ -1622,8 +1627,10 @@ namespace dxvk {
     // Depth bounds testing is disabled on devices which don't support it.
     VkPipelineDepthStencilStateCreateInfo dsInfo = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
 
-    // Only the view mask is used as input, and since we do not use MultiView, it is always 0
     VkPipelineRenderingCreateInfo rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
+    if (m_shaders.vs && m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
+        rtInfo.viewMask = 0b11;
+    }
 
     VkGraphicsPipelineLibraryCreateInfoEXT libInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT, &rtInfo };
     libInfo.flags             = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT;

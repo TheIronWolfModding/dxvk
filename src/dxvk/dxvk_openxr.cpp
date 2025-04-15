@@ -42,17 +42,8 @@ namespace dxvk {
 
   void DxvkXrProvider::initInstanceExtensions() {
     std::lock_guard<dxvk::mutex> lock(m_mutex);
-
-    if (!m_wineOxr)
-      m_wineOxr = this->loadLibrary();
-
-    if (!m_wineOxr || m_initializedInsExt)
+    if (m_initializedInsExt)
       return;
-
-    if (!this->loadFunctions()) {
-      this->shutdown();
-      return;
-    }
 
     m_insExtensions = this->queryInstanceExtensions();
     m_initializedInsExt = true;
@@ -71,67 +62,44 @@ namespace dxvk {
 
   void DxvkXrProvider::initDeviceExtensions(const DxvkInstance* instance) {
     std::lock_guard<dxvk::mutex> lock(m_mutex);
-
-    if (!m_wineOxr || m_initializedDevExt)
+    if (m_initializedDevExt)
       return;
     
     m_devExtensions = this->queryDeviceExtensions();
     m_initializedDevExt = true;
-
-    this->shutdown();
   }
 
 
   DxvkNameSet DxvkXrProvider::queryInstanceExtensions() const {
-    int res;
-    uint32_t len;
-
-    res = g_winexrFunctions.__wineopenxr_GetVulkanInstanceExtensions(0, &len, nullptr);
-    if (res != 0) {
-      Logger::warn("OpenXR: Unable to get required Vulkan instance extensions size");
-      return DxvkNameSet();
-    }
-
-    std::vector<char> extensionList(len);
-    res = g_winexrFunctions.__wineopenxr_GetVulkanInstanceExtensions(len, &len, &extensionList[0]);
-    if (res != 0) {
-      Logger::warn("OpenXR: Unable to get required Vulkan instance extensions");
-      return DxvkNameSet();
-    }
-
-    return parseExtensionList(std::string(extensionList.data(), len));
+    auto extensionList = env::getEnvVar("GTR2_XR_VK_INSTANCE_EXT_REQUIREMENTS");
+    return parseExtensionList(extensionList, true /*instance*/);
   }
   
   
   DxvkNameSet DxvkXrProvider::queryDeviceExtensions() const {
-    int res;
-
-    uint32_t len;
-    res = g_winexrFunctions.__wineopenxr_GetVulkanDeviceExtensions(0, &len, nullptr);
-    if (res != 0) {
-      Logger::warn("OpenXR: Unable to get required Vulkan Device extensions size");
-      return DxvkNameSet();
-    }
-
-    std::vector<char> extensionList(len);
-    res = g_winexrFunctions.__wineopenxr_GetVulkanDeviceExtensions(len, &len, &extensionList[0]);
-    if (res != 0) {
-      Logger::warn("OpenXR: Unable to get required Vulkan Device extensions");
-      return DxvkNameSet();
-    }
-
-    return parseExtensionList(std::string(extensionList.data(), len));
+    auto extensionList = env::getEnvVar("GTR2_XR_VK_DEVICE_EXT_REQUIREMENTS");
+    return parseExtensionList(extensionList, false /*instance*/);
   }
   
   
-  DxvkNameSet DxvkXrProvider::parseExtensionList(const std::string& str) const {
+  DxvkNameSet
+  DxvkXrProvider::parseExtensionList(const std::string& str,
+                                     bool instance) const
+  {
     DxvkNameSet result;
     
     std::stringstream strstream(str);
     std::string       section;
     
-    while (std::getline(strstream, section, ' '))
+    if (instance)
+      Logger::info("OpenXR: Instance Extensions requested:");
+    else
+      Logger::info("OpenXR: Device Extensions requested:");
+
+    while (std::getline(strstream, section, ' ')) {
       result.add(section.c_str());
+      Logger::info(section);
+    }
     
     return result;
   }

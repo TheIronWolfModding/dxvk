@@ -11,7 +11,22 @@ namespace dxvk::caps {
   constexpr uint32_t MaxTextureBlendStages        = MaxSimultaneousTextures;
   constexpr uint32_t MaxSimultaneousRenderTargets = D3D_MAX_SIMULTANEOUS_RENDERTARGETS;
 
-  constexpr uint32_t MaxFloatConstantsVS          = 256;
+  // GTR2_SPECIFIC: Some shaders use indexing/relative access into c136 for calculating
+  // lighting (I think).  The very worst possible case is c136+64.
+  //
+  // DxsoCompiler::emitRegisterPtr unfortunately maxes out the size in such case:
+  //
+  //   if (!relative) {
+  //     ...
+  //   else {
+  //     m_meta.maxConstIndexF = m_layout->floatCount;
+  //
+  // and constant upload is one of the biggest DXVK costs on the main thread.
+  //
+  // c136 is the last register I ever seen and 12 is the highest index I know of.
+  // See: IDirect3DDevice9Proxy::SetVertexShaderConstantI.
+  constexpr uint32_t MaxFloatConstantsVS          = 136 + 12;
+  //constexpr uint32_t MaxFloatConstantsVS          = 256;
   constexpr uint32_t MaxFloatConstantsPS          = 224;
   constexpr uint32_t MaxOtherConstants            = 16;
   constexpr uint32_t MaxFloatConstantsSoftware    = 8192;

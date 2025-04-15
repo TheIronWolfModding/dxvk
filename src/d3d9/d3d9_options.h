@@ -99,6 +99,9 @@ namespace dxvk {
     /// Forced aspect ratio, disable other modes
     std::string forceAspectRatio;
 
+    /// Enable dialog mode (ie. no exclusive fullscreen)
+    bool enableDialogMode;
+
     /// Always use a spec constant to determine sampler type (instead of just in PS 1.x)
     /// Works around a game bug in Halo CE where it gives cube textures to 2d/volume samplers
     bool forceSamplerTypeSpecConstants;
@@ -151,6 +154,13 @@ namespace dxvk {
 
     /// Enable depth texcoord Z (Dref) scaling (D3D8 quirk)
     int32_t drefScaling;
+    
+    /// How much virtual memory will be used for buffers (in MB).
+    int32_t bufferMemory;
+
+    /// Force VK_FORMAT_D32_SFLOAT_S8_UINT depth stencil for increased
+    /// precision.
+    bool forceD32FS8DepthStencil;
 
     /// Add an extra front buffer to make GetFrontBufferData() work correctly when the swapchain only has a single buffer
     bool extraFrontbuffer;

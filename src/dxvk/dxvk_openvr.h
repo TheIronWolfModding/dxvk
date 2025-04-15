@@ -62,8 +62,7 @@ namespace dxvk {
     DxvkNameSet queryDeviceExtensions(
             Rc<DxvkAdapter>           adapter) const;
 
-    DxvkNameSet parseExtensionList(
-      const std::string&              str) const;
+    DxvkNameSet parseExtensionList(const std::string& str, bool instance) const;
     
     vr::IVRCompositor* getCompositor();
 
