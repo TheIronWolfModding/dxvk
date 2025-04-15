@@ -1418,12 +1418,13 @@ namespace dxvk {
 
     D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
     D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
-
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(src == nullptr || dst == nullptr))
       return D3DERR_INVALIDCALL;
 
     if (unlikely(src == dst))
       return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     return StretchRectInternal(src, pSourceRect, dst, pDestRect, Filter, 0, 0);
   }
@@ -3935,9 +3936,10 @@ namespace dxvk {
 
   HRESULT D3D9DeviceEx::CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
   {
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
       return D3DERR_INVALIDCALL;
-
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     try {
       const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, nullptr, pSharedHandle);
       m_initializer->InitTexture(surface->GetCommonTexture());
