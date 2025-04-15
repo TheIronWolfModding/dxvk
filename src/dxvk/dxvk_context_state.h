@@ -74,7 +74,6 @@ namespace dxvk {
   enum class DxvkContextFeature : uint32_t {
     TrackGraphicsPipeline,
     VariableMultisampleRate,
-    IndexBufferRobustness,
     DebugUtils,
     DirectMultiDraw,
     FeatureCount
@@ -134,6 +133,7 @@ namespace dxvk {
     DxvkRenderTargets   renderTargets;
     DxvkRenderPassOps   renderPassOps;
     DxvkFramebufferInfo framebufferInfo;
+    DxvkAttachmentMask  attachmentMask;
   };
 
 

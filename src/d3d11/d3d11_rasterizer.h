@@ -38,7 +38,13 @@ namespace dxvk {
       return &m_desc;
     }
     
-    void BindToContext(DxvkContext* ctx);
+    DxvkRasterizerState GetState() const {
+      return m_state;
+    }
+
+    DxvkDepthBias GetDepthBias() const {
+      return m_depthBias;
+    }
     
     D3D10RasterizerState* GetD3D10Iface() {
       return &m_d3d10;
@@ -56,9 +62,11 @@ namespace dxvk {
   private:
     
     D3D11_RASTERIZER_DESC2 m_desc;
-    DxvkRasterizerState    m_state;
-    DxvkDepthBias          m_depthBias;
+    DxvkRasterizerState    m_state      = { };
+    DxvkDepthBias          m_depthBias  = { };
     D3D10RasterizerState   m_d3d10;
+
+    D3DDestructionNotifier m_destructionNotifier;
     
   };
   

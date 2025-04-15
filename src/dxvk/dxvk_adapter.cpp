@@ -326,12 +326,6 @@ namespace dxvk {
     // Always enable robust buffer access
     enabledFeatures.core.features.robustBufferAccess = VK_TRUE;
 
-    // Always enable sparse residency if we can use it for efficient zero-initialization
-    if (m_deviceInfo.core.properties.sparseProperties.residencyNonResidentStrict) {
-      enabledFeatures.core.features.sparseBinding = m_deviceFeatures.core.features.sparseBinding;
-      enabledFeatures.core.features.sparseResidencyBuffer = m_deviceFeatures.core.features.sparseResidencyBuffer;
-    }
-
     // Always enable features used by the HUD
     enabledFeatures.core.features.multiDrawIndirect = VK_TRUE;
     enabledFeatures.vk11.shaderDrawParameters = VK_TRUE;
@@ -377,11 +371,7 @@ namespace dxvk {
     // Core features that we're relying on in various places
     enabledFeatures.vk13.synchronization2 = VK_TRUE;
     enabledFeatures.vk13.dynamicRendering = VK_TRUE;
-
-    // Maintenance4 may cause performance problems on amdvlk in some cases
-    if (m_deviceInfo.vk12.driverID != VK_DRIVER_ID_AMD_OPEN_SOURCE
-     && m_deviceInfo.vk12.driverID != VK_DRIVER_ID_AMD_PROPRIETARY)
-      enabledFeatures.vk13.maintenance4 = VK_TRUE;
+    enabledFeatures.vk13.maintenance4 = VK_TRUE;
 
     // We expose depth clip rather than depth clamp to client APIs
     enabledFeatures.extDepthClipEnable.depthClipEnable =
@@ -444,9 +434,8 @@ namespace dxvk {
       m_deviceFeatures.extSwapchainMaintenance1.swapchainMaintenance1 &&
       instance->extensions().extSurfaceMaintenance1;
 
-    // Enable maintenance features if supported
-    enabledFeatures.khrMaintenance5.maintenance5 =
-      m_deviceFeatures.khrMaintenance5.maintenance5;
+    // Enable maintenance features if supported. maintenance5 is required.
+    enabledFeatures.khrMaintenance5.maintenance5 = VK_TRUE;
     enabledFeatures.khrMaintenance7.maintenance7 =
       m_deviceFeatures.khrMaintenance7.maintenance7;
 
@@ -987,6 +976,9 @@ namespace dxvk {
     if (m_deviceExtensions.supports(VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME))
       m_deviceFeatures.khrExternalSemaphoreWin32 = VK_TRUE;
 
+    if (m_deviceExtensions.supports(VK_KHR_LOAD_STORE_OP_NONE_EXTENSION_NAME))
+      m_deviceFeatures.khrLoadStoreOpNone = VK_TRUE;
+
     if (m_deviceExtensions.supports(VK_KHR_MAINTENANCE_5_EXTENSION_NAME)) {
       m_deviceFeatures.khrMaintenance5.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR;
       m_deviceFeatures.khrMaintenance5.pNext = std::exchange(m_deviceFeatures.core.pNext, &m_deviceFeatures.khrMaintenance5);
@@ -1080,6 +1072,7 @@ namespace dxvk {
       &devExtensions.extVertexAttributeDivisor,
       &devExtensions.khrExternalMemoryWin32,
       &devExtensions.khrExternalSemaphoreWin32,
+      &devExtensions.khrLoadStoreOpNone,
       &devExtensions.khrMaintenance5,
       &devExtensions.khrMaintenance7,
       &devExtensions.khrPipelineLibrary,
@@ -1224,6 +1217,9 @@ namespace dxvk {
 
     if (devExtensions.khrExternalSemaphoreWin32)
       enabledFeatures.khrExternalSemaphoreWin32 = VK_TRUE;
+
+    if (devExtensions.khrLoadStoreOpNone)
+      enabledFeatures.khrLoadStoreOpNone = VK_TRUE;
 
     if (devExtensions.khrMaintenance5) {
       enabledFeatures.khrMaintenance5.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR;
@@ -1406,6 +1402,8 @@ namespace dxvk {
       "\n  extension supported                    : " << (features.khrExternalMemoryWin32 ? "1" : "0") <<
       "\n" << VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME <<
       "\n  extension supported                    : " << (features.khrExternalSemaphoreWin32 ? "1" : "0") <<
+      "\n" << VK_KHR_LOAD_STORE_OP_NONE_EXTENSION_NAME <<
+      "\n  extension supported                    : " << (features.khrLoadStoreOpNone ? "1" : "0") <<
       "\n" << VK_KHR_MAINTENANCE_5_EXTENSION_NAME <<
       "\n  maintenance5                           : " << (features.khrMaintenance5.maintenance5 ? "1" : "0") <<
       "\n" << VK_KHR_MAINTENANCE_7_EXTENSION_NAME <<

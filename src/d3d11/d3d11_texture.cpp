@@ -170,7 +170,7 @@ namespace dxvk {
     
     // Determine map mode based on our findings
     VkMemoryPropertyFlags memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    std::tie(m_mapMode, memoryProperties) = DetermineMapMode(&imageInfo);
+    std::tie(m_mapMode, memoryProperties) = DetermineMapMode(pDevice, &imageInfo);
     
     // If the image is mapped directly to host memory, we need
     // to enable linear tiling, and DXVK needs to be aware that
@@ -546,6 +546,7 @@ namespace dxvk {
 
   
   std::pair<D3D11_COMMON_TEXTURE_MAP_MODE, VkMemoryPropertyFlags> D3D11CommonTexture::DetermineMapMode(
+    const D3D11Device*          device,
     const DxvkImageCreateInfo*  pImageInfo) const {
     // Don't map an image unless the application requests it
     if (!m_desc.CPUAccessFlags)
@@ -563,8 +564,9 @@ namespace dxvk {
       return { D3D11_COMMON_TEXTURE_MAP_MODE_STAGING, 0u };
 
     // If the packed format and image format don't match, we need to use
-    // a staging buffer and perform format conversion when mapping.
-    if (m_packedFormat != pImageInfo->format)
+    // a staging buffer and perform format conversion when mapping. The
+    // same is true if the game is broken and requires tight packing.
+    if (m_packedFormat != pImageInfo->format || device->GetOptions()->disableDirectImageMapping)
       return { D3D11_COMMON_TEXTURE_MAP_MODE_DYNAMIC, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT };
 
     // Multi-plane and depth-stencil images have a special memory layout
@@ -827,8 +829,9 @@ namespace dxvk {
 
     // Filter out unnecessary flags. Transfer operations
     // are handled by the backend in a transparent manner.
-    Usage &= ~(VK_IMAGE_USAGE_TRANSFER_DST_BIT
-             | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    Usage &= VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT
+      | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+      | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     // Storage images require GENERAL.
     if (Usage & VK_IMAGE_USAGE_STORAGE_BIT)
@@ -837,7 +840,7 @@ namespace dxvk {
     // Also use GENERAL if the image cannot be rendered to. This
     // should not harm any hardware in practice and may avoid some
     // redundant layout transitions for regular textures.
-    if (Usage == VK_IMAGE_USAGE_SAMPLED_BIT)
+    if (!(Usage & ~VK_IMAGE_USAGE_SAMPLED_BIT))
       return VK_IMAGE_LAYOUT_GENERAL;
 
     // If the image is used only as an attachment, we never
@@ -1126,7 +1129,8 @@ namespace dxvk {
     m_interop (this, &m_texture),
     m_surface (this, &m_texture),
     m_resource(this, pDevice),
-    m_d3d10   (this) {
+    m_d3d10   (this),
+    m_destructionNotifier(this) {
     
   }
   
@@ -1181,6 +1185,11 @@ namespace dxvk {
       return S_OK;
     }
     
+    if (riid == __uuidof(ID3DDestructionNotifier)) {
+      *ppvObject = ref(&m_destructionNotifier);
+      return S_OK;
+    }
+
     if (logQueryInterfaceError(__uuidof(ID3D10Texture1D), riid)) {
       Logger::warn("D3D11Texture1D::QueryInterface: Unknown interface query");
       Logger::warn(str::format(riid));
@@ -1238,7 +1247,8 @@ namespace dxvk {
     m_surface   (this, &m_texture),
     m_resource  (this, pDevice),
     m_d3d10     (this),
-    m_swapChain (nullptr) {
+    m_swapChain (nullptr),
+    m_destructionNotifier(this) {
   }
 
 
@@ -1253,7 +1263,8 @@ namespace dxvk {
     m_surface   (this, &m_texture),
     m_resource  (this, pDevice),
     m_d3d10     (this),
-    m_swapChain (nullptr) {
+    m_swapChain (nullptr),
+    m_destructionNotifier(this) {
     
   }
 
@@ -1269,7 +1280,8 @@ namespace dxvk {
     m_surface   (this, &m_texture),
     m_resource  (this, pDevice),
     m_d3d10     (this),
-    m_swapChain (pSwapChain) {
+    m_swapChain (pSwapChain),
+    m_destructionNotifier(this) {
     
   }
   
@@ -1350,6 +1362,11 @@ namespace dxvk {
       return S_OK;
     }
     
+    if (riid == __uuidof(ID3DDestructionNotifier)) {
+      *ppvObject = ref(&m_destructionNotifier);
+      return S_OK;
+    }
+
     if (logQueryInterfaceError(__uuidof(ID3D10Texture2D), riid)) {
       Logger::warn("D3D11Texture2D::QueryInterface: Unknown interface query");
       Logger::warn(str::format(riid));
@@ -1421,7 +1438,8 @@ namespace dxvk {
     m_texture (this, pDevice, pDesc, p11on12Info, D3D11_RESOURCE_DIMENSION_TEXTURE3D, 0, VK_NULL_HANDLE, nullptr),
     m_interop (this, &m_texture),
     m_resource(this, pDevice),
-    m_d3d10   (this) {
+    m_d3d10   (this),
+    m_destructionNotifier(this) {
     
   }
   
@@ -1466,6 +1484,11 @@ namespace dxvk {
 
     if (riid == __uuidof(IDXGIVkInteropSurface)) {
       *ppvObject = ref(&m_interop);
+      return S_OK;
+    }
+
+    if (riid == __uuidof(ID3DDestructionNotifier)) {
+      *ppvObject = ref(&m_destructionNotifier);
       return S_OK;
     }
     
