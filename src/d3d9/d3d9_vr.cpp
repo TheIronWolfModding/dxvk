@@ -298,11 +298,6 @@ public:
 
     for (uint32_t i = 0; i < layerCount; ++i) {
       D3D9Surface* dst = static_cast<D3D9Surface*>(dsts[i]);
-      if (unlikely(src == nullptr || dst == nullptr))
-        return D3DERR_INVALIDCALL;
-      if (unlikely(src == dst))
-        return D3DERR_INVALIDCALL;
-
       auto const ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i, 0);
       if (FAILED(ret))
         return ret;
