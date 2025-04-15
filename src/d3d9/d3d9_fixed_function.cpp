@@ -601,11 +601,6 @@ namespace dxvk {
     InverseViewMatrix,
     ProjMatrix,
 
-    WorldViewMatrix2,
-    NormalMatrix2,
-    InverseViewMatrix2,
-    ProjMatrix2,
-      
     Texcoord0,
     Texcoord1,
     Texcoord2,
@@ -803,7 +798,6 @@ namespace dxvk {
     uint32_t              m_vec2Type;
     uint32_t              m_mat3Type;
     uint32_t              m_mat4Type;
-    uint32_t              m_boolType;
 
     uint32_t              m_entryPointId;
 
@@ -848,7 +842,6 @@ namespace dxvk {
     m_vec2Type   = m_module.defVectorType(m_floatType, 2);
     m_mat3Type   = m_module.defMatrixType(m_vec3Type, 3);
     m_mat4Type   = m_module.defMatrixType(m_vec4Type, 4);
-    m_boolType   = m_module.defBoolType();
 
     m_entryPointId = m_module.allocateId();
 
@@ -1487,11 +1480,6 @@ namespace dxvk {
       m_mat4Type, // InverseView
       m_mat4Type, // Proj
 
-      m_mat4Type, // World2
-      m_mat4Type, // View2
-      m_mat4Type, // InverseView2
-      m_mat4Type, // Proj2
-
       m_mat4Type, // Texture0
       m_mat4Type, // Texture1
       m_mat4Type, // Texture2
@@ -1565,11 +1553,6 @@ namespace dxvk {
     m_module.setDebugMemberName(structType, member++, "Normal");
     m_module.setDebugMemberName(structType, member++, "InverseView");
     m_module.setDebugMemberName(structType, member++, "Projection");
-
-    m_module.setDebugMemberName(structType, member++, "WorldView2");
-    m_module.setDebugMemberName(structType, member++, "Normal2");
-    m_module.setDebugMemberName(structType, member++, "InverseView2");
-    m_module.setDebugMemberName(structType, member++, "Projection2");
 
     m_module.setDebugMemberName(structType, member++, "TexcoordTransform0");
     m_module.setDebugMemberName(structType, member++, "TexcoordTransform1");
@@ -1680,10 +1663,10 @@ namespace dxvk {
     // Load constants
     auto LoadConstant = [&](uint32_t type, uint32_t idx) {
       uint32_t offset  = m_module.constu32(idx);
-
       uint32_t typePtr = m_module.defPointerType(type, spv::StorageClassUniform);
 
-      return m_module.opLoad(type, m_module.opAccessChain(typePtr, m_vs.constantBuffer, 1, &offset));
+      return m_module.opLoad(type,
+        m_module.opAccessChain(typePtr, m_vs.constantBuffer, 1, &offset));
     };
 
     m_vs.constants.worldview = LoadConstant(m_mat4Type, uint32_t(D3D9FFVSMembers::WorldViewMatrix));
