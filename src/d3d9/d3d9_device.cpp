@@ -4199,7 +4199,7 @@ namespace dxvk {
       return D3DERR_INVALIDCALL;
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
     try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, nullptr, pSharedHandle);
+      const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, IsExtended(), nullptr, pSharedHandle);
       m_initializer->InitTexture(surface->GetCommonTexture());
       *ppSurface = surface.ref();
       m_losableResourceCounter++;
