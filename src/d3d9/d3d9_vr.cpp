@@ -158,7 +158,7 @@ public:
     Rc<DxvkShader> dxvkShader = common->GetShader();
 
     const auto shaderKey = dxvkShader->getShaderKey().toString();
-    memcpy(out, shaderKey.c_str(), shaderKey.size());
+    ::memcpy(out, shaderKey.c_str(), shaderKey.size());
 
     return D3D_OK;
   }
@@ -170,12 +170,7 @@ public:
       Rc<DxvkShader> dxvkShader = common->GetShader();
       SpirvCodeBuffer code = dxvkShader->getRawCode();
 
-      auto c = code.data();
-      if (out != nullptr) {
-          for(uint32_t i=0; i < code.dwords(); ++i) {
-              out[i] = c[i];
-          }
-      }
+      ::memcpy(out, code.data(), code.dwords() * sizeof(uint32_t));
       *size = code.dwords();
 
       return D3D_OK;
