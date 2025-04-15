@@ -113,7 +113,6 @@ namespace dxvk {
         this->m_o1IdxOffset = rhs.m_o1IdxOffset;
         this->m_o1LocOffset = rhs.m_o1LocOffset;
         this->m_specConstantMask = rhs.m_specConstantMask;
-        this->m_uniformData = rhs.m_uniformData;
 
         return *this;
     }
