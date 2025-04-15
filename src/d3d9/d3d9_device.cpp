@@ -1152,7 +1152,6 @@ namespace dxvk {
     }
 #endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
-
     const DxvkFormatInfo* dstFormatInfo = lookupFormatInfo(dstImage->info().format);
     const DxvkFormatInfo* srcFormatInfo = lookupFormatInfo(srcImage->info().format);
 
