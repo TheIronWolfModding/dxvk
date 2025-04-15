@@ -7560,16 +7560,14 @@ namespace dxvk {
 
       auto mapPtr = m_vsFixedFunction.AllocSlice();
 
-      auto View = m_state.transforms[GetTransformIndex(D3DTS_VIEW)];
-      auto WorldView    = View * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
+      auto WorldView    = m_state.transforms[GetTransformIndex(D3DTS_VIEW)] * m_state.transforms[GetTransformIndex(D3DTS_WORLD)];
       auto NormalMatrix = inverse(WorldView);
-      auto Projection = m_state.transforms[GetTransformIndex(D3DTS_PROJECTION)];
 
       D3D9FixedFunctionVS* data = reinterpret_cast<D3D9FixedFunctionVS*>(mapPtr);
       data->WorldView     = WorldView;
       data->NormalMatrix  = NormalMatrix;
-      data->InverseView   = transpose(inverse(View));
-      data->Projection    = Projection;
+      data->InverseView  = transpose(inverse(m_state.transforms[GetTransformIndex(D3DTS_VIEW)]));
+      data->Projection   = m_state.transforms[GetTransformIndex(D3DTS_PROJECTION)];
 
       for (uint32_t i = 0; i < data->TexcoordMatrices.size(); i++)
         data->TexcoordMatrices[i] = m_state.transforms[GetTransformIndex(D3DTS_TEXTURE0) + i];

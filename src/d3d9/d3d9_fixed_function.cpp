@@ -1670,7 +1670,6 @@ namespace dxvk {
 
     // VS Caps
     m_module.enableCapability(spv::CapabilityClipDistance);
-    uint32_t viewIndex = 0u;
 
     emitLightTypeDecl();
     emitBaseBufferDecl();
