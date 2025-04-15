@@ -59,8 +59,6 @@ namespace dxvk {
 
     void ClearContainer();
 
-    inline void SetMultiviewSurfaceLayer(UINT layer) { m_layer = layer; }
-
   private:
 
     D3D9GDIDesc m_dcDesc;
