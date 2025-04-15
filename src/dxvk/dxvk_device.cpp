@@ -437,7 +437,7 @@ namespace dxvk {
     // these drivers probably can't run DXVK anyway, but might as well
     bool tilerMode = m_adapter->matchesDriver(VK_DRIVER_ID_MESA_TURNIP)
                   || m_adapter->matchesDriver(VK_DRIVER_ID_QUALCOMM_PROPRIETARY)
-                  || m_adapter->matchesDriver(VK_DRIVER_ID_MESA_HONEYKRISP)
+                  //|| m_adapter->matchesDriver(VK_DRIVER_ID_MESA_HONEYKRISP)
                   || m_adapter->matchesDriver(VK_DRIVER_ID_MOLTENVK)
                   || m_adapter->matchesDriver(VK_DRIVER_ID_MESA_PANVK)
                   || m_adapter->matchesDriver(VK_DRIVER_ID_ARM_PROPRIETARY)
@@ -451,7 +451,8 @@ namespace dxvk {
 
     // Be less aggressive on secondary command buffer usage on
     // drivers that do not natively support them
-    hints.preferPrimaryCmdBufs = m_adapter->matchesDriver(VK_DRIVER_ID_MESA_HONEYKRISP) || !tilerMode;
+    hints.preferPrimaryCmdBufs =
+      /*m_adapter->matchesDriver(VK_DRIVER_ID_MESA_HONEYKRISP) || */!tilerMode;
     return hints;
   }
 
