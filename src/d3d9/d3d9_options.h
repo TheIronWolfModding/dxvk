@@ -34,7 +34,7 @@ namespace dxvk {
     int32_t maxFrameRate;
 
     /// Set the max shader model the device can support in the caps.
-    int32_t shaderModel;
+    uint32_t shaderModel;
 
     /// Whether or not to set the process as DPI aware in Windows when the API interface is created.
     bool dpiAware;
@@ -49,10 +49,6 @@ namespace dxvk {
 
     /// Whether or not to do a fast path clear if we're close enough to the whole render target.
     bool lenientClear;
-
-    /// Back buffer count for the Vulkan swap chain.
-    /// Overrides buffer count in present parameters.
-    int32_t numBackBuffers;
 
     /// Defer surface creation
     bool deferSurfaceCreation;
@@ -165,6 +161,9 @@ namespace dxvk {
     /// Force VK_FORMAT_D32_SFLOAT_S8_UINT depth stencil for increased
     /// precision.
     bool forceD32FS8DepthStencil;
+
+    /// Add an extra front buffer to make GetFrontBufferData() work correctly when the swapchain only has a single buffer
+    bool extraFrontbuffer;
   };
 
 }

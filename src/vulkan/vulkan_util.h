@@ -40,6 +40,11 @@ namespace dxvk::vk {
     = VK_ACCESS_HOST_READ_BIT
     | VK_ACCESS_HOST_WRITE_BIT;
 
+  constexpr static VkAccessFlags AccessGfxSideEffectMask
+    = VK_ACCESS_SHADER_WRITE_BIT
+    | VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT
+    | VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT;
+
   constexpr static VkPipelineStageFlags StageDeviceMask
     = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
     | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT
@@ -239,7 +244,7 @@ namespace dxvk::vk {
     label.color[0] = ((color >> 16u) & 0xffu) / 255.0f;
     label.color[1] = ((color >> 8u)  & 0xffu) / 255.0f;
     label.color[2] = ((color >> 0u)  & 0xffu) / 255.0f;
-    label.color[3] = 1.0f;
+    label.color[3] = color ? 1.0f : 0.0f;
     label.pLabelName = text;
     return label;
   }
