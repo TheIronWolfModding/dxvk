@@ -54,13 +54,6 @@ IDirect3DVR9 : public IUnknown
                                                        vkDeviceDescOut) = 0;
 
   // Begin Detegr's work
-  // Likely FOVeated work, not yet, or never as it requires more draw calls.
-  //virtual HRESULT STDMETHODCALLTYPE CopySurfaceToVulkanImage(IDirect3DSurface9 * pSurface, VkImage dst, int64_t format, uint32_t dstWidth, uint32_t dstHeight) = 0;
-  //virtual HRESULT STDMETHODCALLTYPE Flush() = 0;
-  //virtual HRESULT STDMETHODCALLTYPE LockSubmissionQueue() = 0;
-  //virtual HRESULT STDMETHODCALLTYPE UnlockSubmissionQueue() = 0;
-  //virtual HRESULT STDMETHODCALLTYPE ImportFence(HANDLE handle, uint64_t value) = 0;
-  //virtual HRESULT STDMETHODCALLTYPE SignalFence(uint64_t value) = 0;
   virtual HRESULT STDMETHODCALLTYPE GetShaderHash(IDirect3DVertexShader9 *d3dShader, char** out) = 0;
   virtual HRESULT STDMETHODCALLTYPE PatchSPIRVToVertexShader(IDirect3DVertexShader9 *d3dShader, const uint32_t* data, uint32_t size) = 0;
   virtual HRESULT STDMETHODCALLTYPE CreateMultiViewRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE*pSharedHandle, UINT Views) = 0;
@@ -69,7 +62,6 @@ IDirect3DVR9 : public IUnknown
   virtual HRESULT STDMETHODCALLTYPE GetSPIRVShaderCode(IDirect3DVertexShader9 *d3dShader, uint32_t* out, uint32_t* size) = 0;
   virtual HRESULT STDMETHODCALLTYPE GetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t* out) = 0;
   virtual HRESULT STDMETHODCALLTYPE SetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t constantCount) = 0;
-  virtual HRESULT STDMETHODCALLTYPE EnableFixedFunctionMultiView(bool enable) = 0;
   // End Detegr's work
 
   virtual HRESULT STDMETHODCALLTYPE CopySurfaceIntoLayer(IDirect3DSurface9* srcSurface, IDirect3DSurface9* dstMultiLayerSurface, UINT targetLayer) = 0;

@@ -1078,12 +1078,6 @@ namespace dxvk {
       return DxvkCsChunkRef(chunk, &m_csChunkPool);
     }
 
-    bool MultiViewFF() const { return m_multiViewFF; }
-    void SetMultiViewFF(bool enabled) {
-      m_multiViewFF = enabled;
-      m_flags.set(D3D9DeviceFlag::DirtyFFVertexShader);
-    }
-
   private:
 
     template<bool AllowFlush = true, typename Cmd>
@@ -1511,7 +1505,6 @@ namespace dxvk {
     D3D9VkInteropDevice             m_d3d9Interop;
     D3D9On12                        m_d3d9On12;
     DxvkD3D8Bridge                  m_d3d8Bridge;
-    bool                            m_multiViewFF;
   };
 
 }
