@@ -1171,17 +1171,15 @@ namespace dxvk {
     return m_mostRecentlyUsedSwapchain->GetFrontBufferData(pDestSurface);
   }
 
-
-  HRESULT STDMETHODCALLTYPE D3D9DeviceEx::StretchRect(
-          IDirect3DSurface9*   pSourceSurface,
-    const RECT*                pSourceRect,
-          IDirect3DSurface9*   pDestSurface,
-    const RECT*                pDestRect,
-          D3DTEXTUREFILTERTYPE Filter) {
+  HRESULT D3D9DeviceEx::StretchRectInternal(
+      D3D9Surface*         src,
+      const RECT*          pSourceRect,
+      D3D9Surface*         dst,
+      const RECT*          pDestRect,
+      D3DTEXTUREFILTERTYPE Filter,
+      UINT                 srcLayer,
+      UINT                 dstLayer) {
     D3D9DeviceLock lock = LockDevice();
-
-    D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
-    D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
 
 #ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (unlikely(src == nullptr || dst == nullptr)) {
@@ -1246,9 +1244,12 @@ namespace dxvk {
 
     // Copies are only supported if the sample count matches,
     // otherwise we need to resolve.
-    bool needsResolve = srcImage->info().sampleCount != VK_SAMPLE_COUNT_1_BIT;
-    bool fbBlit       = dstImage->info().sampleCount != VK_SAMPLE_COUNT_1_BIT;
-    fastPath &= !fbBlit;
+    auto needsResolve = false;
+    if (srcImage->info().sampleCount != dstImage->info().sampleCount) {
+      needsResolve = srcImage->info().sampleCount != VK_SAMPLE_COUNT_1_BIT;
+      auto fbBlit = dstImage->info().sampleCount != VK_SAMPLE_COUNT_1_BIT;
+      fastPath &= !fbBlit;
+    }
 
     // Copies would only work if we are block aligned.
     if (pSourceRect != nullptr) {
@@ -1266,12 +1267,12 @@ namespace dxvk {
     VkImageSubresourceLayers dstSubresourceLayers = {
       dstSubresource.aspectMask,
       dstSubresource.mipLevel,
-      dstSubresource.arrayLayer, 1 };
+      dstLayer != 0 ? dstLayer : dstSubresource.arrayLayer, 1 };
 
     VkImageSubresourceLayers srcSubresourceLayers = {
       srcSubresource.aspectMask,
       srcSubresource.mipLevel,
-      srcSubresource.arrayLayer, 1 };
+      srcLayer != 0 ? srcLayer : srcSubresource.arrayLayer, 1 };
 
     VkImageBlit blitInfo;
     blitInfo.dstSubresource = dstSubresourceLayers;
@@ -1314,10 +1315,10 @@ namespace dxvk {
       uint32_t(blitInfo.dstOffsets[1].y - blitInfo.dstOffsets[0].y),
       uint32_t(blitInfo.dstOffsets[1].z - blitInfo.dstOffsets[0].z) };
 
-#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     bool srcIsDS = IsDepthStencilFormat(srcFormat);
     bool dstIsDS = IsDepthStencilFormat(dstFormat);
     if (unlikely(srcIsDS || dstIsDS)) {
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
       if (unlikely(!srcIsDS || !dstIsDS)) {
         assert(false);
         return D3DERR_INVALIDCALL;
@@ -1332,13 +1333,12 @@ namespace dxvk {
         assert(false);
         return D3DERR_INVALIDCALL;
       }
-
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
       if (unlikely(m_flags.test(D3D9DeviceFlag::InScene))) {
         assert(false);
         return D3DERR_INVALIDCALL;
       }
     }
-#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
 
     // Copies would only work if the extents match. (ie. no stretching)
     bool stretch = srcCopyExtent != dstCopyExtent;
@@ -1347,7 +1347,7 @@ namespace dxvk {
     bool dstHasRTUsage = (dstTextureInfo->Desc()->Usage & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL)) != 0;
     bool dstIsSurface = dstTextureInfo->GetType() == D3DRTYPE_SURFACE;
     if (stretch) {
-      if (unlikely(pSourceSurface == pDestSurface)) {
+      if (unlikely(src == dst)) {
         assert(false);
         return D3DERR_INVALIDCALL;
       }
@@ -1488,6 +1488,27 @@ namespace dxvk {
     return D3D_OK;
   }
 
+
+  HRESULT STDMETHODCALLTYPE D3D9DeviceEx::StretchRect(
+          IDirect3DSurface9*   pSourceSurface,
+    const RECT*                pSourceRect,
+          IDirect3DSurface9*   pDestSurface,
+    const RECT*                pDestRect,
+          D3DTEXTUREFILTERTYPE Filter) {
+    D3D9DeviceLock lock = LockDevice();
+
+    D3D9Surface* dst = static_cast<D3D9Surface*>(pDestSurface);
+    D3D9Surface* src = static_cast<D3D9Surface*>(pSourceSurface);
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (unlikely(src == nullptr || dst == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    if (unlikely(src == dst))
+      return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+
+    return StretchRectInternal(src, pSourceRect, dst, pDestRect, Filter, 0, 0);
+  }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::ColorFill(
           IDirect3DSurface9* pSurface,
@@ -4131,6 +4152,25 @@ namespace dxvk {
       dwFlags);
   }
 
+  HRESULT D3D9DeviceEx::CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
+  {
+#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
+    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
+      return D3DERR_INVALIDCALL;
+#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+    try {
+      const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, nullptr, pSharedHandle);
+      m_initializer->InitTexture(surface->GetCommonTexture());
+      *ppSurface = surface.ref();
+      m_losableResourceCounter++;
+
+      return D3D_OK;
+    }
+    catch (const DxvkError& e) {
+      Logger::err(e.message());
+      return D3DERR_OUTOFVIDEOMEMORY;
+    }
+  }
 
   HRESULT STDMETHODCALLTYPE D3D9DeviceEx::CreateRenderTargetEx(
           UINT                Width,
@@ -4172,21 +4212,7 @@ namespace dxvk {
     desc.IsAttachmentOnly   = TRUE;
     desc.IsLockable         = Lockable;
 
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_SURFACE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, &desc, nullptr, pSharedHandle);
-      m_initializer->InitTexture(surface->GetCommonTexture());
-      *ppSurface = surface.ref();
-      m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
 
@@ -4273,22 +4299,7 @@ namespace dxvk {
     desc.IsBackBuffer       = FALSE;
     desc.IsAttachmentOnly   = TRUE;
     desc.IsLockable         = IsLockableDepthStencilFormat(desc.Format);
-
-    if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_SURFACE, &desc)))
-      return D3DERR_INVALIDCALL;
-
-    try {
-      const Com<D3D9Surface> surface = new D3D9Surface(this, &desc, nullptr, pSharedHandle);
-      m_initializer->InitTexture(surface->GetCommonTexture());
-      *ppSurface = surface.ref();
-      m_losableResourceCounter++;
-
-      return D3D_OK;
-    }
-    catch (const DxvkError& e) {
-      Logger::err(e.message());
-      return D3DERR_OUTOFVIDEOMEMORY;
-    }
+    return CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
   }
 
 
@@ -4551,6 +4562,9 @@ namespace dxvk {
   DxvkDeviceFeatures D3D9DeviceEx::GetDeviceFeatures(const Rc<DxvkAdapter>& adapter) {
     DxvkDeviceFeatures supported = adapter->features();
     DxvkDeviceFeatures enabled = {};
+
+    enabled.vk11.multiview = supported.vk11.multiview;
+    enabled.vk11.variablePointers = supported.vk11.variablePointers;
 
     // Geometry shaders are used for some meta ops
     enabled.core.features.geometryShader = VK_TRUE;

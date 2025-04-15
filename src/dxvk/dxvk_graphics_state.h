@@ -815,7 +815,6 @@ namespace dxvk {
       return rtFormat != VK_FORMAT_UNDEFINED;
     }
 
-
     DxvkIaInfo              ia;
     DxvkIlInfo              il;
     DxvkRsInfo              rs;

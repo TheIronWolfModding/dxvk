@@ -1030,6 +1030,8 @@ namespace dxvk {
       &devExtensions.nvRawAccessChains,
       &devExtensions.nvxBinaryImport,
       &devExtensions.nvxImageViewHandle,
+      &devExtensions.multiview,
+      &devExtensions.variablePointers,
     }};
   }
 
@@ -1190,6 +1192,12 @@ namespace dxvk {
 
     if (devExtensions.khrWin32KeyedMutex)
       enabledFeatures.khrWin32KeyedMutex = VK_TRUE;
+
+    if (devExtensions.multiview)
+      enabledFeatures.multiview = VK_TRUE;
+
+    if (devExtensions.variablePointers)
+      enabledFeatures.variablePointers = VK_TRUE;
   }
 
   
@@ -1243,6 +1251,8 @@ namespace dxvk {
       "\n  sparseResidencyAliased                 : ", features.core.features.sparseResidencyAliased ? "1" : "0",
       "\nVulkan 1.1",
       "\n  shaderDrawParameters                   : ", features.vk11.shaderDrawParameters,
+      "\n  multiView                              : ", features.vk11.multiview ? "1" : "0",
+      "\n  variablePointers                       : ", features.vk11.variablePointers ? "1" : "0",
       "\nVulkan 1.2",
       "\n  samplerMirrorClampToEdge               : ", features.vk12.samplerMirrorClampToEdge,
       "\n  drawIndirectCount                      : ", features.vk12.drawIndirectCount,
@@ -1339,7 +1349,11 @@ namespace dxvk {
       "\n", VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME,
       "\n  extension supported                    : ", features.nvxImageViewHandle ? "1" : "0",
       "\n", VK_KHR_WIN32_KEYED_MUTEX_EXTENSION_NAME,
-      "\n  extension supported                    : ", features.khrWin32KeyedMutex ? "1" : "0"));
+      "\n  extension supported                    : ", features.khrWin32KeyedMutex ? "1" : "0",
+      "\n", VK_KHR_MULTIVIEW_EXTENSION_NAME,
+      "\n  extension supported                    : ", features.multiview ? "1" : "0",
+      "\n", VK_KHR_VARIABLE_POINTERS_EXTENSION_NAME,
+      "\n  extension supported                    : ", features.variablePointers ? "1" : "0"));
   }
 
 

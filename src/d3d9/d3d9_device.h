@@ -744,6 +744,15 @@ namespace dxvk {
      * \brief Copies the given part of a texture from the local system memory copy of the source texture
      * to the image of the destination texture.
      */
+    HRESULT StretchRectInternal(
+          D3D9Surface*         src,
+          const RECT*          pSourceRect,
+          D3D9Surface*         dst,
+          const RECT*          pDestRect,
+          D3DTEXTUREFILTERTYPE Filter,
+          UINT                 srcLayer,
+          UINT                 dstLayer);
+
     void UpdateTextureFromBuffer(
             D3D9CommonTexture*      pDestTexture,
             D3D9CommonTexture*      pSrcTexture,
@@ -1137,6 +1146,7 @@ namespace dxvk {
     void RemoveMappedBuffer(D3D9CommonBuffer* pBuffer);
 
   public:
+    HRESULT CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
 
     DxvkCsChunkRef AllocCsChunk() {
       DxvkCsChunk* chunk = m_csChunkPool.allocChunk(DxvkCsChunkFlag::SingleUse);

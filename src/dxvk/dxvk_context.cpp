@@ -5,6 +5,8 @@
 #include "dxvk_device.h"
 #include "dxvk_context.h"
 
+#include <assert.h>
+
 namespace dxvk {
   
   DxvkContext::DxvkContext(const Rc<DxvkDevice>& device)
@@ -380,7 +382,12 @@ namespace dxvk {
       clearRect.rect.extent.width   = imageView->mipLevelExtent(0).width;
       clearRect.rect.extent.height  = imageView->mipLevelExtent(0).height;
       clearRect.baseArrayLayer      = 0;
-      clearRect.layerCount          = imageView->info().layerCount;
+      // GTR2_SPECIFIC: I don't know why VUID 3101662214/2296829979 barks here - perhaps
+      // it requires that layerCount matches the rectCount?
+      // clearRect.layerCount          = ;
+      assert(imageView->info().layerCount == 1 ||
+             imageView->info().layerCount == 2); // Multiview.  This could be breaking cube textures, but not happening in GTR2.
+      clearRect.layerCount          = 1;
 
       m_cmd->cmdClearAttachments(1, &clearInfo, 1, &clearRect);
     } else
@@ -1326,6 +1333,7 @@ namespace dxvk {
       attachmentInfo.imageView = mipGenerator.getDstViewHandle(i);
       renderingInfo.renderArea = scissor;
       renderingInfo.layerCount = passExtent.depth;
+      renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
       
       // Set up push constants
       DxvkMetaBlitPushConstants pushConstants = { };
@@ -1843,6 +1851,7 @@ namespace dxvk {
       VkRenderingInfo renderingInfo = { VK_STRUCTURE_TYPE_RENDERING_INFO };
       renderingInfo.renderArea.extent = { extent.width, extent.height };
       renderingInfo.layerCount = imageView->info().layerCount;
+      renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
       VkImageLayout loadLayout;
       VkImageLayout storeLayout;
@@ -2683,6 +2692,8 @@ namespace dxvk {
       VkOffset2D { 0, 0 },
       VkExtent2D { imageExtent.width, imageExtent.height } };
     renderingInfo.layerCount = dstView->info().layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
+
     renderingInfo.colorAttachmentCount = 1;
     renderingInfo.pColorAttachments = &attachmentInfo;
 
@@ -3501,6 +3512,7 @@ namespace dxvk {
       VkRenderingInfo renderingInfo = { VK_STRUCTURE_TYPE_RENDERING_INFO };
       renderingInfo.renderArea.extent = { extent.width, extent.height };
       renderingInfo.layerCount = imageView->info().layerCount;
+      renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
       if (imageView->info().aspects & VK_IMAGE_ASPECT_COLOR_BIT) {
         clearStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -3882,6 +3894,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { mipExtent.width, mipExtent.height };
     renderingInfo.layerCount = dstSubresource.layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
     VkImageAspectFlags dstAspects = dstImage->formatInfo()->aspectMask;
 
@@ -4285,6 +4298,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { extent.width, extent.height };
     renderingInfo.layerCount = region.dstSubresource.layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
     if (dstImage->formatInfo()->aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT)
       renderingInfo.pDepthAttachment = &depthAttachment;
@@ -4481,6 +4495,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { passExtent.width, passExtent.height };
     renderingInfo.layerCount = region.dstSubresource.layerCount;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
     
     VkImageAspectFlags dstAspects = dstImage->formatInfo()->aspectMask;
 
@@ -4902,6 +4917,7 @@ namespace dxvk {
     renderingInfo.renderArea.offset = VkOffset2D { 0, 0 };
     renderingInfo.renderArea.extent = VkExtent2D { fbSize.width, fbSize.height };
     renderingInfo.layerCount = fbSize.layers;
+    renderingInfo.viewMask = renderingInfo.layerCount == 4 ? 0b1111 : renderingInfo.layerCount == 2 ? 0b11 : 0;
 
     if (colorInfoCount) {
       renderingInfo.colorAttachmentCount = colorInfoCount;
