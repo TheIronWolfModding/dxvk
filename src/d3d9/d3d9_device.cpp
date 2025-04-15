@@ -7563,8 +7563,8 @@ namespace dxvk {
       auto NormalMatrix = inverse(WorldView);
 
       D3D9FixedFunctionVS* data = reinterpret_cast<D3D9FixedFunctionVS*>(mapPtr);
-      data->WorldView     = WorldView;
-      data->NormalMatrix  = NormalMatrix;
+      data->WorldView    = WorldView;
+      data->NormalMatrix = NormalMatrix;
       data->InverseView  = transpose(inverse(m_state.transforms[GetTransformIndex(D3DTS_VIEW)]));
       data->Projection   = m_state.transforms[GetTransformIndex(D3DTS_PROJECTION)];
 
