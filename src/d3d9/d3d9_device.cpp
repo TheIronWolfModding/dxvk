@@ -3271,6 +3271,7 @@ namespace dxvk {
     // hit in GTR2.
     if (dst->GetMapMode() == D3D9_COMMON_BUFFER_MAP_MODE_BUFFER
         || dst->GetMapMode() == D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE) {
+      assert(false);
       uint32_t copySize = VertexCount * decl->GetSize(0);
 
       EmitCs([
@@ -4189,10 +4190,9 @@ namespace dxvk {
 
   HRESULT D3D9DeviceEx::CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
   {
-#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
       return D3DERR_INVALIDCALL;
-#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+
     try {
       const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, IsExtended(), nullptr, pSharedHandle);
       m_initializer->InitTexture(surface->GetCommonTexture());
@@ -4779,7 +4779,7 @@ namespace dxvk {
     // TODO_TIW: 02/22/25 - actually I can't repro the hang anymore, perhaps uncomment on next version/retest ...
     // Also, don't seem to repro anymore with 561.9.0, perhaps this is driver specific.
     if (stagingBufferAllocated > MaxStagingMemoryInFlight)
-        m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
+      m_dxvkDevice->waitForFence(*m_stagingBufferFence, stagingBufferAllocated - MaxStagingMemoryInFlight);
   }
 
 
@@ -4842,7 +4842,7 @@ namespace dxvk {
       return 0;
 
     std::array<uint32_t, 3> offsets = { pBox->Front, pBox->Top, pBox->Left };
-    
+
     uint32_t elementSize = 1;
 
     if (FormatInfo != nullptr) {
@@ -5440,6 +5440,7 @@ namespace dxvk {
     const bool needsReadback = pResource->NeedsReadback();
 
     uint8_t* data = nullptr;
+
     if ((Flags & D3DLOCK_DISCARD) && (directMapping || needsReadback)) {
       // If we're not directly mapped and don't need readback,
       // the buffer is not currently getting used anyway
@@ -8753,7 +8754,7 @@ namespace dxvk {
         D3D9_COMMON_BUFFER_MAP_MODE_UNMAPPABLE) {
       m_mappedBuffers.insert(pBuffer);
     }
-#endif
+#endif // D3D9_ALLOW_UNMAPPING
 
     return ptr;
   }
@@ -8769,7 +8770,7 @@ namespace dxvk {
     assert(false);
     // TODO_MMF: dead code
     //m_mappedBuffers.touch(pBuffer);
-#endif
+#endif // D3D9_ALLOW_UNMAPPING
   }
 
   void D3D9DeviceEx::RemoveMappedBuffer(D3D9CommonBuffer* pBuffer)
@@ -8782,7 +8783,7 @@ namespace dxvk {
       D3D9DeviceLock lock = LockDevice();
       m_mappedBuffers.erase(pBuffer);
     }
-#endif
+#endif // D3D9_ALLOW_UNMAPPING
   }
 
   void
@@ -8806,7 +8807,7 @@ namespace dxvk {
       (*iter)->UnmapData();
       iter = m_mappedBuffers.erase(iter);
     }
-#endif
+#endif // D3D9_ALLOW_UNMAPPING
   }
 
 
