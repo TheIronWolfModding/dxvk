@@ -9,7 +9,6 @@
 #include "../spirv/spirv_module.h"
 
 #include <cfloat>
-#include <assert.h>
 
 namespace dxvk {
 

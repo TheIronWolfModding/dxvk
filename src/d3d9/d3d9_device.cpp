@@ -30,7 +30,6 @@
 #ifdef MSC_VER
 #pragma fenv_access (on)
 #endif
-#include <assert.h>
 
 namespace dxvk {
 
