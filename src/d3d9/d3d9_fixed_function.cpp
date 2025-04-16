@@ -599,7 +599,7 @@ namespace dxvk {
     NormalMatrix,
     InverseViewMatrix,
     ProjMatrix,
-
+      
     Texcoord0,
     Texcoord1,
     Texcoord2,
