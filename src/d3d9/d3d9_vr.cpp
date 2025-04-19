@@ -316,6 +316,27 @@ public:
     return m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
   }
 
+  HRESULT STDMETHODCALLTYPE CopyStereoLayers2DoubleWide(IDirect3DSurface9* srcSurface, IDirect3DSurface9* dstSurface)
+  {
+    D3D9DeviceLock lock = m_device->LockDevice();
+    D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
+    D3D9Surface* dst = static_cast<D3D9Surface*>(dstSurface);
+
+    D3DSURFACE_DESC desc;
+    dstSurface->GetDesc(&desc);
+    UINT const halfWidth = desc.Width / 2;
+    UINT const height = desc.Height;
+
+    RECT const leftRect = { 0, 0, static_cast<LONG>(halfWidth), static_cast<LONG>(height) };
+    RECT const rightRect = { static_cast<LONG>(halfWidth), 0, static_cast<LONG>(desc.Width), static_cast<LONG>(height) };
+
+    m_device->StretchRectInternal(src, nullptr, dst, &leftRect, D3DTEXF_NONE, 0, 0);
+    m_device->StretchRectInternal(src, nullptr, dst, &rightRect, D3DTEXF_NONE, 1, 0);
+
+    return D3D_OK;
+  }
+
+
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;

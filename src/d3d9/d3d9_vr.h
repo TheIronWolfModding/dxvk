@@ -65,6 +65,7 @@ IDirect3DVR9 : public IUnknown
   // End Detegr's work
 
   virtual HRESULT STDMETHODCALLTYPE CopySurfaceIntoLayer(IDirect3DSurface9* srcSurface, IDirect3DSurface9* dstMultiLayerSurface, UINT targetLayer) = 0;
+  virtual HRESULT STDMETHODCALLTYPE CopyStereoLayers2DoubleWide(IDirect3DSurface9* srcSurface, IDirect3DSurface9* dstSurface) = 0;
 };
 #ifdef _MSC_VER
 struct __declspec(uuid("7e272b32-a49c-46c7-b1a4-ef52936bec87")) IDirect3DVR9;
