@@ -3936,10 +3936,9 @@ namespace dxvk {
 
   HRESULT D3D9DeviceEx::CreateRenderTargetFromDesc(D3D9_COMMON_TEXTURE_DESC* pDesc, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle)
   {
-#ifdef GTR2_SPECIFIC_VALIDATE_PARAMS
     if (FAILED(D3D9CommonTexture::NormalizeTextureProperties(this, D3DRTYPE_TEXTURE, pDesc)))
       return D3DERR_INVALIDCALL;
-#endif // GTR2_SPECIFIC_VALIDATE_PARAMS
+
     try {
       const Com<D3D9Surface> surface = new D3D9Surface(this, pDesc, nullptr, pSharedHandle);
       m_initializer->InitTexture(surface->GetCommonTexture());
