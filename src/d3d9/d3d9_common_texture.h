@@ -560,6 +560,12 @@ namespace dxvk {
 
     void ExportImageInfo();
 
+    static VkImageViewType GetImageViewTypeFromResourceType(
+            D3DRESOURCETYPE  Dimension,
+            UINT             Layer,
+            UINT             LayerCount);
+
+    static constexpr UINT AllLayers = UINT32_MAX;
   };
 
 }

@@ -25,8 +25,7 @@ namespace dxvk {
       m_face               (Face),
       m_mipLevel           (MipLevel),
       m_isSrgbCompatible   (pTexture->IsSrgbCompatible()),
-      m_isNull             (pTexture->IsNull()),
-      m_layer              (AllLayers) {
+      m_isNull             (pTexture->IsNull()) {
 
     }
 
@@ -66,7 +65,8 @@ namespace dxvk {
     }
 
     inline UINT GetFace() const {
-      return m_face;
+      const bool isMultiviewResource = m_texture->Desc()->ArraySize > 1 && m_texture->Desc()->ArraySize <= 4;
+      return isMultiviewResource ? AllLayers : m_face;
     }
 
     inline UINT GetMipLevel() const {
@@ -82,7 +82,7 @@ namespace dxvk {
       Rc<DxvkImageView>& view = m_sampleView.Pick(Srgb);
 
       if (unlikely(view == nullptr && !IsNull()))
-        view = m_texture->CreateView(m_layer, m_mipLevel, VK_IMAGE_USAGE_SAMPLED_BIT, Srgb);
+        view = m_texture->CreateView(GetFace(), m_mipLevel, VK_IMAGE_USAGE_SAMPLED_BIT, Srgb);
 
       return view;
     }
@@ -92,7 +92,7 @@ namespace dxvk {
       Rc<DxvkImageView>& view = m_renderTargetView.Pick(Srgb);
 
       if (unlikely(view == nullptr && !IsNull()))
-        view = m_texture->CreateView(m_layer, m_mipLevel, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, Srgb);
+        view = m_texture->CreateView(GetFace(), m_mipLevel, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, Srgb);
 
       return view;
     }
@@ -105,7 +105,7 @@ namespace dxvk {
       Rc<DxvkImageView>& view = m_depthStencilView;
 
       if (unlikely(view == nullptr))
-        view = m_texture->CreateView(m_layer, m_mipLevel, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false);
+        view = m_texture->CreateView(GetFace(), m_mipLevel, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false);
 
       return view;
     }
@@ -130,6 +130,8 @@ namespace dxvk {
       std::swap(m_renderTargetView, Other->m_renderTargetView);
     }
 
+    inline void SetMultiviewSurfaceLayer(UINT layer) { /* TODO */ }
+
   protected:
 
     IUnknown*               m_container;
@@ -142,8 +144,6 @@ namespace dxvk {
     UINT                    m_isSrgbCompatible : 1;
     UINT                    m_isNull           : 1;
   
-    UINT                    m_layer;
-
     D3D9ColorView           m_sampleView;
     D3D9ColorView           m_renderTargetView;
     Rc<DxvkImageView>       m_depthStencilView;
