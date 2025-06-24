@@ -2,6 +2,8 @@
 
 #include "../util/config/config.h"
 
+#include "../vulkan/vulkan_loader.h"
+
 namespace dxvk {
 
   struct DxvkOptions {
@@ -10,9 +12,6 @@ namespace dxvk {
 
     /// Enable debug utils
     bool enableDebugUtils = false;
-
-    /// Enable state cache
-    bool enableStateCache = true;
 
     /// Enable memory defragmentation
     Tristate enableMemoryDefrag = Tristate::Auto;
@@ -23,6 +22,9 @@ namespace dxvk {
 
     /// Enable graphics pipeline library
     Tristate enableGraphicsPipelineLibrary = Tristate::Auto;
+
+    /// Enable descriptor buffer
+    Tristate enableDescriptorBuffer = Tristate::Auto;
 
     /// Enables pipeline lifetime tracking
     Tristate trackPipelineLifetime = Tristate::Auto;
@@ -60,6 +62,9 @@ namespace dxvk {
 
     /// Whether to enable tiler optimizations
     Tristate tilerMode = Tristate::Auto;
+
+    /// Overrides memory budget for DXVK
+    VkDeviceSize maxMemoryBudget = 0u;
 
     // Device name
     std::string deviceFilter;

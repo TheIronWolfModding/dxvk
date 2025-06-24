@@ -79,13 +79,21 @@ namespace dxvk {
 
     Rc<DxvkAdapter> GetDXVKAdapter() { return m_adapter; }
 
+    uint32_t GetVendorId() const {
+      return m_vendorId;
+    }
+
     D3D9_VK_FORMAT_MAPPING GetFormatMapping(D3D9Format Format) const {
-      return m_d3d9Formats.GetFormatMapping(Format);
+      return m_d3d9Formats->GetFormatMapping(Format);
     }
 
     const DxvkFormatInfo* GetUnsupportedFormatInfo(D3D9Format Format) const {
-      return m_d3d9Formats.GetUnsupportedFormatInfo(Format);
+      return m_d3d9Formats->GetUnsupportedFormatInfo(Format);
     }
+
+    bool IsExtended() const;
+
+    bool IsD3D8Compatible() const;
 
   private:
 
@@ -96,16 +104,28 @@ namespace dxvk {
 
     void CacheModes(D3D9Format Format);
 
+    void FilterModesByFormat(
+          D3D9Format Format,
+          const bool ApplyOptionsFilter);
+
+    void CacheIdentifierInfo();
+
     D3D9InterfaceEx*              m_parent;
 
     Rc<DxvkAdapter>               m_adapter;
     UINT                          m_ordinal;
     UINT                          m_displayIndex;
 
-    std::vector<D3DDISPLAYMODEEX> m_modes;
-    D3D9Format                    m_modeCacheFormat;
+    GUID                          m_deviceGuid;
+    uint32_t                      m_vendorId;
+    uint32_t                      m_deviceId;
+    std::string                   m_deviceDesc;
+    std::string                   m_deviceDriver;
 
-    const D3D9VkFormatTable       m_d3d9Formats;
+    std::vector<D3DDISPLAYMODEEX>            m_modes;
+    D3D9Format                               m_modeCacheFormat;
+
+    std::unique_ptr<const D3D9VkFormatTable> m_d3d9Formats;
 
   };
 
