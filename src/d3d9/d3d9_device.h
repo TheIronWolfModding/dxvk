@@ -940,7 +940,7 @@ namespace dxvk {
 
     void UpdateTextureBitmasks(uint32_t index, DWORD combinedUsage);
 
-    void UpdateActiveHazardsRT(uint32_t rtMask, uint32_t texMask);
+    void UpdateActiveHazardsRT(uint32_t texMask);
 
     void UpdateActiveHazardsDS(uint32_t texMask);
 
@@ -1004,8 +1004,6 @@ namespace dxvk {
 
     void BindViewportAndScissor();
 
-    bool IsAlphaToCoverageEnabled() const;
-
     inline bool IsNVDepthBoundsTestEnabled () {
       // NVDB is not supported by D3D8
       if (unlikely(m_isD3D8Compatible))
@@ -1014,9 +1012,7 @@ namespace dxvk {
       return m_state.renderStates[D3DRS_ADAPTIVETESS_X] == uint32_t(D3D9Format::NVDB);
     }
 
-    inline bool IsAlphaTestEnabled() {
-      return m_state.renderStates[D3DRS_ALPHATESTENABLE] && !m_atocEnabled;
-    }
+    void UpdateAlphaToCoverangeAndAlphaTest();
 
     inline bool IsZTestEnabled() {
       return m_state.renderStates[D3DRS_ZENABLE] && m_state.depthStencil != nullptr;
@@ -1030,7 +1026,7 @@ namespace dxvk {
 
     void BindDepthStencilState();
 
-    void BindDepthStencilRefrence();
+    void BindDepthStencilReference();
 
     void BindRasterizerState();
 
@@ -1272,6 +1268,10 @@ namespace dxvk {
       return DxvkCsChunkRef(chunk, &m_csChunkPool);
     }
 
+    bool Is9On12Device() const {
+      return m_d3d9On12Args.Enable9On12;
+    }
+
   private:
 
     template<bool AllowFlush = true, typename Cmd>
@@ -1368,7 +1368,7 @@ namespace dxvk {
 
       switch (ConstantType) {
         default:
-        case D3D9ConstantType::Float:  return isVS ? caps::MaxFloatConstantsSoftware : caps::MaxFloatConstantsPS;
+        case D3D9ConstantType::Float:  return isVS ? caps::MaxFloatConstantsSoftware : caps::MaxSM3FloatConstantsPS;
         case D3D9ConstantType::Int:    return isVS ? caps::MaxOtherConstantsSoftware : caps::MaxOtherConstants;
         case D3D9ConstantType::Bool:   return isVS ? caps::MaxOtherConstantsSoftware : caps::MaxOtherConstants;
       }
@@ -1691,6 +1691,7 @@ namespace dxvk {
     Direct3DState9                  m_state;
 
     D3D9VkInteropDevice             m_d3d9Interop;
+    D3D9ON12_ARGS                   m_d3d9On12Args = { };
     D3D9On12                        m_d3d9On12;
     DxvkD3D8Bridge                  m_d3d8Bridge;
 

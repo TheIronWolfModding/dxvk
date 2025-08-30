@@ -7,6 +7,8 @@
 
 #include "../dxvk/dxvk_adapter.h"
 
+#include "../wsi/wsi_monitor.h"
+
 namespace dxvk {
 
   class D3D9InterfaceEx;
@@ -17,6 +19,7 @@ namespace dxvk {
 
     D3D9Adapter(
             D3D9InterfaceEx* pParent,
+      const D3D9ON12_ARGS*   p9On12Args,
             Rc<DxvkAdapter>  Adapter,
             UINT             Ordinal,
             UINT             DisplayIndex);
@@ -91,11 +94,35 @@ namespace dxvk {
       return m_d3d9Formats->GetUnsupportedFormatInfo(Format);
     }
 
+    D3D9ON12_ARGS Get9On12Args() const {
+      return m_9On12Args;
+    }
+
     bool IsExtended() const;
 
     bool IsD3D8Compatible() const;
 
   private:
+
+    // used as a global filter when mode count compatibility is enabled
+    inline bool IsCountCompatibleMode(const wsi::WsiMode& wsiMode) {
+      if (wsiMode.refreshRate.numerator / wsiMode.refreshRate.denominator != 60)
+        return false;
+
+      return (wsiMode.width == 640  && wsiMode.height == 480)
+          || (wsiMode.width == 800  && wsiMode.height == 600)
+          || (wsiMode.width == 1024 && wsiMode.height == 768)
+          || (wsiMode.width == 1280 && wsiMode.height == 1024)
+          || (wsiMode.width == 1280 && wsiMode.height == 720)
+          || (wsiMode.width == 1920 && wsiMode.height == 1080);
+    }
+
+    inline bool IsEquivalentMode(const wsi::WsiMode& wsiModeA, const wsi::WsiMode& wsiModeB) {
+      return wsiModeA.width  == wsiModeB.width  &&
+             wsiModeA.height == wsiModeB.height &&
+             (wsiModeA.refreshRate.numerator / wsiModeA.refreshRate.denominator ==
+              wsiModeB.refreshRate.numerator / wsiModeB.refreshRate.denominator);
+    }
 
     HRESULT CheckDeviceVkFormat(
           VkFormat        Format,
@@ -121,6 +148,7 @@ namespace dxvk {
     uint32_t                      m_deviceId;
     std::string                   m_deviceDesc;
     std::string                   m_deviceDriver;
+    D3D9ON12_ARGS                 m_9On12Args = { };
 
     std::vector<D3DDISPLAYMODEEX>            m_modes;
     D3D9Format                               m_modeCacheFormat;

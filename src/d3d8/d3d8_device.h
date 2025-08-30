@@ -374,13 +374,17 @@ namespace dxvk {
      * called immediately before changing any D3D9 state.
      */
     inline void StateChange() {
-      if (ShouldBatch())
+      if (unlikely(ShouldBatch()))
         m_batcher->StateChange();
     }
 
     inline void ResetState() {
       // Mirrors how D3D9 handles the BackBufferCount
       m_presentParams.BackBufferCount = std::max(m_presentParams.BackBufferCount, 1u);
+
+      // Reset D3D8 exclusive render states
+      m_linePattern = {};
+      m_zVisible    = 0;
 
       // Purge cached objects
       m_textures.fill(nullptr);
@@ -430,11 +434,6 @@ namespace dxvk {
     D3DLINEPATTERN        m_linePattern   = {};
     // Value of D3DRS_ZVISIBLE (although the RS is not supported, its value is stored)
     DWORD                 m_zVisible      = 0;
-    // Value of D3DRS_PATCHSEGMENTS
-    float                 m_patchSegments = 1.0f;
-
-    // Controls fixed-function exclusive mode (no PS support)
-    bool                  m_isFixedFunctionOnly = false;
 
     bool                  m_shadowPerspectiveDivide = false;
 

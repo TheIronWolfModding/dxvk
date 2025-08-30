@@ -10,8 +10,6 @@
 #include "../util/util_ratio.h"
 #include "../util/util_string.h"
 
-#include "../wsi/wsi_monitor.h"
-
 #include <cfloat>
 
 namespace dxvk {
@@ -37,6 +35,7 @@ namespace dxvk {
 
   D3D9Adapter::D3D9Adapter(
           D3D9InterfaceEx* pParent,
+    const D3D9ON12_ARGS*   p9On12Args,
           Rc<DxvkAdapter>  Adapter,
           UINT             Ordinal,
           UINT             DisplayIndex)
@@ -49,6 +48,9 @@ namespace dxvk {
     // D3D9VkFormatTable needs to be constructed after we've cached the
     // identifier info and determined the proper vendorID to be used.
     m_d3d9Formats = std::make_unique<D3D9VkFormatTable>(this, Adapter, m_parent->GetOptions());
+
+    if (p9On12Args)
+      m_9On12Args = *p9On12Args;
   }
 
 
@@ -130,7 +132,7 @@ namespace dxvk {
     const bool volumeTexture = RType == D3DRTYPE_VOLUMETEXTURE;
 
     const bool twoDimensional = surface || texture;
-    
+
     const bool isDepthStencilFormat = IsDepthStencilFormat(CheckFormat);
     const bool isLockableDepthStencilFormat = IsLockableDepthStencilFormat(CheckFormat);
 
@@ -246,7 +248,9 @@ namespace dxvk {
       return D3DERR_INVALIDCALL;
 
     auto dst = ConvertFormatUnfixed(SurfaceFormat);
-    if (dst.FormatColor == VK_FORMAT_UNDEFINED)
+    // Wargame: European Escalation expects NULL format
+    // checks to succeed, otherwise it will crash
+    if (SurfaceFormat != D3D9Format::NULL_FORMAT && dst.FormatColor == VK_FORMAT_UNDEFINED)
       return D3DERR_NOTAVAILABLE;
 
     if (MultiSampleType != D3DMULTISAMPLE_NONE
@@ -787,7 +791,10 @@ namespace dxvk {
   HRESULT D3D9Adapter::GetAdapterDisplayModeEx(
           D3DDISPLAYMODEEX*   pMode,
           D3DDISPLAYROTATION* pRotation) {
-    if (pMode == nullptr)
+    if (unlikely(pMode == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    if (unlikely(pMode->Size != sizeof(D3DDISPLAYMODEEX)))
       return D3DERR_INVALIDCALL;
 
     if (pRotation != nullptr)
@@ -888,8 +895,9 @@ namespace dxvk {
 
     // If no modes are returned based on the previous filtered
     // search, then fall back to an unfiltered search.
-    if (unlikely((!options.forceAspectRatio.empty() || options.forceRefreshRate) &&
-                 !m_modes.size())) {
+    if (unlikely((!options.forceAspectRatio.empty()
+                || options.forceRefreshRate
+                || options.modeCountCompatibility) && !m_modes.size())) {
       Logger::warn("D3D9Adapter::CacheModes: No modes were found. Discarding filters.");
       FilterModesByFormat(Format, false);
     }
@@ -917,6 +925,25 @@ namespace dxvk {
 
     const auto forcedRatio = Ratio<DWORD>(options.forceAspectRatio);
 
+    wsi::WsiMode currentMode = { };
+    wsi::WsiMode currentCompatibleMode = { };
+
+    if (options.modeCountCompatibility) {
+      wsi::getDesktopDisplayMode(wsi::getDefaultMonitor(), &currentMode);
+
+      if (likely(currentMode.width)) {
+        // Skip checking the compabilitiy refresh rate (60 Hz),
+        // if that's equal to the current desktop refresh rate.
+        if (currentMode.refreshRate.numerator / currentMode.refreshRate.denominator != 60) {
+          currentCompatibleMode = currentMode;
+          currentCompatibleMode.refreshRate.numerator = 60;
+          currentCompatibleMode.refreshRate.denominator = 1;
+        }
+      } else {
+        Logger::err("D3D9Adapter::CacheModes: Failed to determine desktop display mode");
+      }
+    }
+
     // Walk over all modes that the display supports and
     // return those that match the requested format etc.
     wsi::WsiMode devMode = { };
@@ -932,14 +959,21 @@ namespace dxvk {
       if (devMode.bitsPerPixel != GetMonitorFormatBpp(Format))
         continue;
 
-      if (ApplyOptionsFilters &&
-          !forcedRatio.undefined() &&
+      if (!forcedRatio.undefined() &&
+          ApplyOptionsFilters &&
           Ratio<DWORD>(devMode.width, devMode.height) != forcedRatio)
         continue;
 
-      if (ApplyOptionsFilters &&
-          options.forceRefreshRate &&
+      if (options.forceRefreshRate &&
+          ApplyOptionsFilters &&
           devMode.refreshRate.numerator / devMode.refreshRate.denominator != options.forceRefreshRate)
+        continue;
+
+      if (options.modeCountCompatibility &&
+          ApplyOptionsFilters &&
+          !IsEquivalentMode(devMode, currentMode) &&
+          (!currentCompatibleMode.width || !IsEquivalentMode(devMode, currentCompatibleMode)) &&
+          !IsCountCompatibleMode(devMode))
         continue;
 
       D3DDISPLAYMODEEX mode = ConvertDisplayMode(devMode);
