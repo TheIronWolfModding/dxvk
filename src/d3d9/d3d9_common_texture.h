@@ -441,7 +441,8 @@ namespace dxvk {
     }
 
     static VkImageType GetImageTypeFromResourceType(
-            D3DRESOURCETYPE  Dimension);
+            D3DRESOURCETYPE  Dimension,
+            UINT Layer);
 
     static VkImageViewType GetImageViewTypeFromResourceType(
             D3DRESOURCETYPE  Dimension,
