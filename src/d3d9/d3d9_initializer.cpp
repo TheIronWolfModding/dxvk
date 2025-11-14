@@ -132,7 +132,7 @@ namespace dxvk {
         pitch * blockCount.height,
         alignedPitch,
         alignedPitch * blockCount.height,
-        D3D9CommonTexture::GetImageTypeFromResourceType(pTexture->GetType(), pTexture->Desc()->ArraySize),
+        D3D9CommonTexture::GetImageTypeFromResourceType(pTexture->GetType()),
         mipExtent,
         pTexture->Desc()->ArraySize,
         formatInfo,

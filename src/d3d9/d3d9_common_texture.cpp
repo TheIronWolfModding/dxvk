@@ -329,7 +329,7 @@ namespace dxvk {
 
   Rc<DxvkImage> D3D9CommonTexture::CreatePrimaryImage(D3DRESOURCETYPE ResourceType, bool TryOffscreenRT, HANDLE* pSharedHandle) const {
     DxvkImageCreateInfo imageInfo;
-    imageInfo.type            = GetImageTypeFromResourceType(ResourceType, m_desc.ArraySize);
+    imageInfo.type            = GetImageTypeFromResourceType(ResourceType);
     imageInfo.format          = m_mapping.ConversionFormatInfo.FormatColor != VK_FORMAT_UNDEFINED
                               ? m_mapping.ConversionFormatInfo.FormatColor
                               : m_mapping.FormatColor;
@@ -500,7 +500,7 @@ namespace dxvk {
   }
 
 
-  VkImageType D3D9CommonTexture::GetImageTypeFromResourceType(D3DRESOURCETYPE Type, UINT Layer) {
+  VkImageType D3D9CommonTexture::GetImageTypeFromResourceType(D3DRESOURCETYPE Type) {
     switch (Type) {
       case D3DRTYPE_SURFACE:
       case D3DRTYPE_TEXTURE:       return VK_IMAGE_TYPE_2D;
@@ -516,7 +516,7 @@ namespace dxvk {
           UINT             Layer) {
     switch (Dimension) {
       case D3DRTYPE_SURFACE:
-      case D3DRTYPE_TEXTURE:       return Layer < 2 ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+      case D3DRTYPE_TEXTURE:       return VK_IMAGE_VIEW_TYPE_2D;
       case D3DRTYPE_VOLUMETEXTURE: return VK_IMAGE_VIEW_TYPE_3D;
       case D3DRTYPE_CUBETEXTURE:   return Layer == AllLayers
                                         ? VK_IMAGE_VIEW_TYPE_CUBE
