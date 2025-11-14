@@ -513,15 +513,10 @@ namespace dxvk {
 
   VkImageViewType D3D9CommonTexture::GetImageViewTypeFromResourceType(
           D3DRESOURCETYPE  Dimension,
-          UINT             Layer,
-          UINT             LayerCount) {
+          UINT             Layer) {
     switch (Dimension) {
       case D3DRTYPE_SURFACE:
-      case D3DRTYPE_TEXTURE: {
-        if (LayerCount == 1) return VK_IMAGE_VIEW_TYPE_2D;
-        else if (Layer != AllLayers) return VK_IMAGE_VIEW_TYPE_2D;
-        else return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-      }
+      case D3DRTYPE_TEXTURE:       return Layer < 2 ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
       case D3DRTYPE_VOLUMETEXTURE: return VK_IMAGE_VIEW_TYPE_3D;
       case D3DRTYPE_CUBETEXTURE:   return Layer == AllLayers
                                         ? VK_IMAGE_VIEW_TYPE_CUBE
@@ -645,11 +640,12 @@ namespace dxvk {
                        : PickSRGB(m_mapping.FormatColor, m_mapping.FormatSrgb, Srgb);
     viewInfo.aspects   = lookupFormatInfo(viewInfo.format)->aspectMask;
     viewInfo.usage     = UsageFlags;
-    viewInfo.type      = GetImageViewTypeFromResourceType(m_type, Layer, m_desc.ArraySize);
-    viewInfo.minLevel  = Lod;
-    viewInfo.numLevels = m_desc.MipLevels - Lod;
-    viewInfo.minLayer  = Layer == AllLayers ? 0                : Layer;
-    viewInfo.numLayers = Layer == AllLayers ? m_desc.ArraySize : 1;
+    viewInfo.viewType  = GetImageViewTypeFromResourceType(m_type, Layer);
+    viewInfo.mipIndex  = Lod;
+    viewInfo.mipCount  = m_desc.MipLevels - Lod;
+    viewInfo.layerIndex = Layer == AllLayers ? 0 : Layer;
+    viewInfo.layerCount = Layer == AllLayers ? m_desc.ArraySize : 1;
+    viewInfo.packedSwizzle = DxvkImageViewKey::packSwizzle(m_mapping.Swizzle);
 
     // Remove the stencil aspect if we are trying to create a regular image
     // view of a depth stencil format 
