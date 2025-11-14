@@ -225,18 +225,4 @@ if platform != 'windows'
   subdir('include/native')
 endif
 
-# Add release-specific optimizations
-if get_option('buildtype') == 'release'
-  add_project_arguments(
-    cpp.get_supported_arguments(['-fomit-frame-pointer', '-finline-functions', '-ftree-vectorize']),
-    language: 'cpp'
-  )
-  add_project_arguments(
-    cc.get_supported_arguments(['-fomit-frame-pointer', '-finline-functions', '-ftree-vectorize']),
-    language: 'c'
-  )
-endif
-
 subdir('src')
-
-

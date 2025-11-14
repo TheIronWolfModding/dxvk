@@ -8,13 +8,6 @@ windres = 'i686-w64-mingw32-windres'
 [properties]
 needs_exe_wrapper = true
 
-[built-in options]
-#-march native, zenver4, zenver5 crash at the moment on game startup.
-c_args = ['-O3', '-march=i686', '-flto']
-cpp_args = ['-O3', '-march=i686', '-flto']
-c_link_args = ['-flto', '-s']
-cpp_link_args = ['-flto', '-s']
-
 [host_machine]
 system = 'windows'
 cpu_family = 'x86'
