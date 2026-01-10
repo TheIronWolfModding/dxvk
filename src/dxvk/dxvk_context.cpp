@@ -368,7 +368,9 @@ namespace dxvk {
       // it requires that layerCount matches the rectCount?
       // clearRect.layerCount          = ;
       assert(imageView->info().numLayers == 1 ||
-             imageView->info().numLayers == 2); // Multiview.  This could be breaking cube textures, but not happening in GTR2.
+             imageView->info().numLayers == 2 ||
+             imageView->info().numLayers == 3); // Multiview.  This could be breaking cube textures, but not
+                   // happening in GTR2.
       clearRect.layerCount          = 1;
 
       m_cmd->cmdClearAttachments(1, &clearInfo, 1, &clearRect);
