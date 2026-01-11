@@ -303,7 +303,7 @@ namespace dxvk {
     }
 
     if (vs && vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
-      rtInfo.viewMask = 0b11;
+      rtInfo.viewMask = 0b111; // todo_tiw: what to do for VR?
     }
 
     // Alpha to coverage is not supported with sample mask exports.

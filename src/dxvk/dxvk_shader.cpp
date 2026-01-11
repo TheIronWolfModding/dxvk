@@ -1238,7 +1238,7 @@ namespace dxvk {
 
     VkPipelineRenderingCreateInfo rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
     if (m_shaders.vs && m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
-        rtInfo.viewMask = 0b11;
+        rtInfo.viewMask = 0b111;
     }
 
     VkGraphicsPipelineLibraryCreateInfoEXT libInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT, &rtInfo };
@@ -1328,7 +1328,7 @@ namespace dxvk {
 
     VkPipelineRenderingCreateInfo rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
     if (m_shaders.vs && m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
-        rtInfo.viewMask = 0b11;
+        rtInfo.viewMask = 0b111;
     }
 
     VkGraphicsPipelineLibraryCreateInfoEXT libInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT, &rtInfo };

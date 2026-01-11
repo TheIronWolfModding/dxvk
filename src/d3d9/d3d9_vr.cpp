@@ -348,7 +348,7 @@ public:
     dstSurface->GetDesc(&desc);
     UINT const thirdWidth = desc.Width / 3;
     UINT const height = desc.Height;
-
+    
     RECT const leftRect = {
       0, 0, static_cast<LONG>(thirdWidth), static_cast<LONG>(height)
     };
@@ -363,15 +363,15 @@ public:
       static_cast<LONG>(2 * thirdWidth),
       0,
       static_cast<LONG>(desc.Width),
-                             static_cast<LONG>(height) };
+      static_cast<LONG>(height) };
 
-    src->GetDesc(&desc);
-    m_device->StretchRectInternal(
+    HRESULT hr = m_device->StretchRectInternal(
       src, nullptr, dst, &leftRect, D3DTEXF_NONE, 0, 0);
-    m_device->StretchRectInternal(
+    hr = m_device->StretchRectInternal(
       src, nullptr, dst, &middleRect, D3DTEXF_NONE, 1, 0);
-    m_device->StretchRectInternal(
+    hr = m_device->StretchRectInternal(
       src, nullptr, dst, &rightRect, D3DTEXF_NONE, 2, 0);
+
 
     return D3D_OK;
   }
