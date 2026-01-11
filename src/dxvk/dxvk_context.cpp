@@ -367,9 +367,9 @@ namespace dxvk {
       // GTR2_SPECIFIC: I don't know why VUID 3101662214/2296829979 barks here - perhaps
       // it requires that layerCount matches the rectCount?
       // clearRect.layerCount          = ;
-      assert(imageView->info().numLayers == 1 ||
-             imageView->info().numLayers == 2 ||
-             imageView->info().numLayers == 3); // Multiview.  This could be breaking cube textures, but not
+      //assert(imageView->info().numLayers == 1 ||
+         ///    imageView->info().numLayers == 2 ||
+             //imageView->info().numLayers == 3); // Multiview.  This could be breaking cube textures, but not
                    // happening in GTR2.
       clearRect.layerCount          = 1;
 

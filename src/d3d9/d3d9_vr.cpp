@@ -365,6 +365,7 @@ public:
       static_cast<LONG>(desc.Width),
                              static_cast<LONG>(height) };
 
+    src->GetDesc(&desc);
     m_device->StretchRectInternal(
       src, nullptr, dst, &leftRect, D3DTEXF_NONE, 0, 0);
     m_device->StretchRectInternal(
