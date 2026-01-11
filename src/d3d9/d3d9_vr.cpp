@@ -14,7 +14,8 @@ class D3D9VR final : public ComObjectClamp<IDirect3DVR9>
 public:
   D3D9VR(IDirect3DDevice9* pDevice)
     : m_device(static_cast<D3D9DeviceEx*>(pDevice))
-  {}
+  {
+  }
 
   HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject)
   {
@@ -151,9 +152,11 @@ public:
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE GetShaderHash(IDirect3DVertexShader9 *d3dShader, char** out)
+  HRESULT STDMETHODCALLTYPE GetShaderHash(IDirect3DVertexShader9* d3dShader,
+                                          char** out)
   {
-    D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+    D3D9Shader<IDirect3DVertexShader9>* shader =
+      reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
     D3D9CommonShader const* common = shader->GetCommonShader();
     Rc<DxvkShader> dxvkShader = common->GetShader();
 
@@ -163,142 +166,164 @@ public:
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE GetSPIRVShaderCode(IDirect3DVertexShader9 *d3dShader, uint32_t* out, uint32_t* size)
+  HRESULT STDMETHODCALLTYPE
+  GetSPIRVShaderCode(IDirect3DVertexShader9* d3dShader,
+                     uint32_t* out,
+                     uint32_t* size)
   {
-      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
-      D3D9CommonShader const* common = shader->GetCommonShader();
-      Rc<DxvkShader> dxvkShader = common->GetShader();
-      SpirvCodeBuffer code = dxvkShader->getRawCode();
+    D3D9Shader<IDirect3DVertexShader9>* shader =
+      reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+    D3D9CommonShader const* common = shader->GetCommonShader();
+    Rc<DxvkShader> dxvkShader = common->GetShader();
+    SpirvCodeBuffer code = dxvkShader->getRawCode();
 
-      ::memcpy(out, code.data(), code.dwords() * sizeof(uint32_t));
-      *size = code.dwords();
+    ::memcpy(out, code.data(), code.dwords() * sizeof(uint32_t));
+    *size = code.dwords();
 
-      return D3D_OK;
+    return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE GetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t* out)
+  HRESULT STDMETHODCALLTYPE
+  GetShaderConstantCount(IDirect3DVertexShader9* d3dShader, uint32_t* out)
   {
-      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
-      D3D9CommonShader const* common = shader->GetCommonShader();
-      *out = common->GetMeta().maxConstIndexF;
-      return D3D_OK;
+    D3D9Shader<IDirect3DVertexShader9>* shader =
+      reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+    D3D9CommonShader const* common = shader->GetCommonShader();
+    *out = common->GetMeta().maxConstIndexF;
+    return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE SetShaderConstantCount(IDirect3DVertexShader9 *d3dShader, uint32_t constantCount)
+  HRESULT STDMETHODCALLTYPE
+  SetShaderConstantCount(IDirect3DVertexShader9* d3dShader,
+                         uint32_t constantCount)
   {
-      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
-      D3D9CommonShader* common = shader->GetCommonShader_mut();
-      common->GetMeta_mut().maxConstIndexF = constantCount;
-      return D3D_OK;
+    D3D9Shader<IDirect3DVertexShader9>* shader =
+      reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+    D3D9CommonShader* common = shader->GetCommonShader_mut();
+    common->GetMeta_mut().maxConstIndexF = constantCount;
+    return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE PatchSPIRVToVertexShader(IDirect3DVertexShader9 *d3dShader, const uint32_t* data, uint32_t size)
+  HRESULT STDMETHODCALLTYPE
+  PatchSPIRVToVertexShader(IDirect3DVertexShader9* d3dShader,
+                           const uint32_t* data,
+                           uint32_t size)
   {
-      D3D9Shader<IDirect3DVertexShader9>* shader = reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
-      D3D9CommonShader const* common = shader->GetCommonShader();
-      Rc<DxvkShader> dxvkShader = common->GetShader();
-  
-      SpirvCodeBuffer codeBuffer(size, data);
-      DxvkShaderCreateInfo info = dxvkShader->info();
+    D3D9Shader<IDirect3DVertexShader9>* shader =
+      reinterpret_cast<D3D9Shader<IDirect3DVertexShader9>*>(d3dShader);
+    D3D9CommonShader const* common = shader->GetCommonShader();
+    Rc<DxvkShader> dxvkShader = common->GetShader();
 
-      // DXVK shaders copy the binding info into a more clever container
-      // We need to dig it out here and pass it into the constructor again in a DxvkBindingInfo array
-      auto bindings = dxvkShader->getBindings();
-      DxvkBindingInfo* bindingsCopy;
+    SpirvCodeBuffer codeBuffer(size, data);
+    DxvkShaderCreateInfo info = dxvkShader->info();
 
-      if (info.bindingCount > 0) {
-        bindingsCopy = reinterpret_cast<DxvkBindingInfo*>(malloc(sizeof(DxvkBindingInfo) * info.bindingCount));
+    // DXVK shaders copy the binding info into a more clever container
+    // We need to dig it out here and pass it into the constructor again in a
+    // DxvkBindingInfo array
+    auto bindings = dxvkShader->getBindings();
+    DxvkBindingInfo* bindingsCopy;
 
-        for (uint32_t i = 0; i < info.bindingCount; ++i)
-        {
-            bindingsCopy[i] = bindings.getBinding(DxvkDescriptorSets::VsAll, i);
-        }
+    if (info.bindingCount > 0) {
+      bindingsCopy = reinterpret_cast<DxvkBindingInfo*>(
+        malloc(sizeof(DxvkBindingInfo) * info.bindingCount));
 
-        info.bindings = bindingsCopy;
+      for (uint32_t i = 0; i < info.bindingCount; ++i) {
+        bindingsCopy[i] = bindings.getBinding(DxvkDescriptorSets::VsAll, i);
       }
 
-      *dxvkShader.ptr_mut() = DxvkShader(info, std::move(codeBuffer));
+      info.bindings = bindingsCopy;
+    }
 
-      return D3D_OK;
+    *dxvkShader.ptr_mut() = DxvkShader(info, std::move(codeBuffer));
+
+    return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE CreateMultiViewRenderTarget(
-          UINT                Width,
-          UINT                Height,
-          D3DFORMAT           Format,
-          D3DMULTISAMPLE_TYPE MultiSample,
-          DWORD               MultisampleQuality,
-          BOOL                Lockable,
-          IDirect3DSurface9** ppSurface,
-          HANDLE*             pSharedHandle,
-          UINT                Views) {
-    InitReturnPtr(ppSurface);
-
-    if (unlikely(ppSurface == nullptr))
-      return D3DERR_INVALIDCALL;
-
-    D3D9_COMMON_TEXTURE_DESC desc;
-    desc.Width              = Width;
-    desc.Height             = Height;
-    desc.Depth              = 1;
-    desc.ArraySize          = Views;
-    desc.MipLevels          = 1;
-    desc.Usage              = D3DUSAGE_RENDERTARGET;
-    desc.Format             = EnumerateFormat(Format);
-    desc.Pool               = D3DPOOL_DEFAULT;
-    desc.Discard            = FALSE;
-    desc.MultiSample        = MultiSample;
-    desc.MultisampleQuality = MultisampleQuality;
-    desc.IsBackBuffer       = FALSE;
-    desc.IsAttachmentOnly   = TRUE;
-    desc.IsLockable         = Lockable;
-
-    return m_device->CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
-  }
-
-  HRESULT STDMETHODCALLTYPE CreateMultiViewDepthStencilSurface(
-          UINT                Width,
-          UINT                Height,
-          D3DFORMAT           Format,
-          D3DMULTISAMPLE_TYPE MultiSample,
-          DWORD               MultisampleQuality,
-          BOOL                Discard,
-          IDirect3DSurface9** ppSurface,
-          HANDLE*             pSharedHandle,
-          UINT                Views) {
-    InitReturnPtr(ppSurface);
-
-    if (unlikely(ppSurface == nullptr))
-      return D3DERR_INVALIDCALL;
-
-    D3D9_COMMON_TEXTURE_DESC desc;
-    desc.Width              = Width;
-    desc.Height             = Height;
-    desc.Depth              = 1;
-    desc.ArraySize          = Views;
-    desc.MipLevels          = 1;
-    desc.Usage              = D3DUSAGE_DEPTHSTENCIL;
-    desc.Format             = EnumerateFormat(Format);
-    desc.Pool               = D3DPOOL_DEFAULT;
-    desc.Discard            = Discard;
-    desc.MultiSample        = MultiSample;
-    desc.MultisampleQuality = MultisampleQuality;
-    desc.IsBackBuffer       = FALSE;
-    desc.IsAttachmentOnly   = TRUE;
-    desc.IsLockable         = IsLockableDepthStencilFormat(desc.Format);
-
-    return m_device->CreateRenderTargetFromDesc(&desc, ppSurface, pSharedHandle);
-  }
-
-  HRESULT STDMETHODCALLTYPE CopySurfaceLayers(IDirect3DSurface9 *srcSurface, IDirect3DSurface9** dsts, UINT layerCount)
+  HRESULT STDMETHODCALLTYPE
+  CreateMultiViewRenderTarget(UINT Width,
+                              UINT Height,
+                              D3DFORMAT Format,
+                              D3DMULTISAMPLE_TYPE MultiSample,
+                              DWORD MultisampleQuality,
+                              BOOL Lockable,
+                              IDirect3DSurface9** ppSurface,
+                              HANDLE* pSharedHandle,
+                              UINT Views)
   {
-    // Assumes that `srcSurface` has `layerCount` layers and `dsts` contains `layerCount` of destination surfaces
+    InitReturnPtr(ppSurface);
+
+    if (unlikely(ppSurface == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    D3D9_COMMON_TEXTURE_DESC desc;
+    desc.Width = Width;
+    desc.Height = Height;
+    desc.Depth = 1;
+    desc.ArraySize = Views;
+    desc.MipLevels = 1;
+    desc.Usage = D3DUSAGE_RENDERTARGET;
+    desc.Format = EnumerateFormat(Format);
+    desc.Pool = D3DPOOL_DEFAULT;
+    desc.Discard = FALSE;
+    desc.MultiSample = MultiSample;
+    desc.MultisampleQuality = MultisampleQuality;
+    desc.IsBackBuffer = FALSE;
+    desc.IsAttachmentOnly = TRUE;
+    desc.IsLockable = Lockable;
+
+    return m_device->CreateRenderTargetFromDesc(
+      &desc, ppSurface, pSharedHandle);
+  }
+
+  HRESULT STDMETHODCALLTYPE
+  CreateMultiViewDepthStencilSurface(UINT Width,
+                                     UINT Height,
+                                     D3DFORMAT Format,
+                                     D3DMULTISAMPLE_TYPE MultiSample,
+                                     DWORD MultisampleQuality,
+                                     BOOL Discard,
+                                     IDirect3DSurface9** ppSurface,
+                                     HANDLE* pSharedHandle,
+                                     UINT Views)
+  {
+    InitReturnPtr(ppSurface);
+
+    if (unlikely(ppSurface == nullptr))
+      return D3DERR_INVALIDCALL;
+
+    D3D9_COMMON_TEXTURE_DESC desc;
+    desc.Width = Width;
+    desc.Height = Height;
+    desc.Depth = 1;
+    desc.ArraySize = Views;
+    desc.MipLevels = 1;
+    desc.Usage = D3DUSAGE_DEPTHSTENCIL;
+    desc.Format = EnumerateFormat(Format);
+    desc.Pool = D3DPOOL_DEFAULT;
+    desc.Discard = Discard;
+    desc.MultiSample = MultiSample;
+    desc.MultisampleQuality = MultisampleQuality;
+    desc.IsBackBuffer = FALSE;
+    desc.IsAttachmentOnly = TRUE;
+    desc.IsLockable = IsLockableDepthStencilFormat(desc.Format);
+
+    return m_device->CreateRenderTargetFromDesc(
+      &desc, ppSurface, pSharedHandle);
+  }
+
+  HRESULT STDMETHODCALLTYPE CopySurfaceLayers(IDirect3DSurface9* srcSurface,
+                                              IDirect3DSurface9** dsts,
+                                              UINT layerCount)
+  {
+    // Assumes that `srcSurface` has `layerCount` layers and `dsts` contains
+    // `layerCount` of destination surfaces
     D3D9DeviceLock lock = m_device->LockDevice();
     D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
 
     for (uint32_t i = 0; i < layerCount; ++i) {
       D3D9Surface* dst = static_cast<D3D9Surface*>(dsts[i]);
-      auto const ret = m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, i, 0);
+      auto const ret = m_device->StretchRectInternal(
+        src, nullptr, dst, nullptr, D3DTEXF_NONE, i, 0);
       if (FAILED(ret))
         return ret;
     }
@@ -306,17 +331,21 @@ public:
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE CopySurfaceIntoLayer(IDirect3DSurface9* srcSurface,
-                                                 IDirect3DSurface9* dstMultiLayerSurface,
-                                                 UINT targetLayer)
+  HRESULT STDMETHODCALLTYPE
+  CopySurfaceIntoLayer(IDirect3DSurface9* srcSurface,
+                       IDirect3DSurface9* dstMultiLayerSurface,
+                       UINT targetLayer)
   {
     D3D9DeviceLock lock = m_device->LockDevice();
     D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
     D3D9Surface* dst = static_cast<D3D9Surface*>(dstMultiLayerSurface);
-    return m_device->StretchRectInternal(src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
+    return m_device->StretchRectInternal(
+      src, nullptr, dst, nullptr, D3DTEXF_NONE, 0, targetLayer);
   }
 
-  HRESULT STDMETHODCALLTYPE CopyStereoLayers2DoubleWide(IDirect3DSurface9* srcSurface, IDirect3DSurface9* dstSurface)
+  HRESULT STDMETHODCALLTYPE
+  CopyStereoLayers2DoubleWide(IDirect3DSurface9* srcSurface,
+                              IDirect3DSurface9* dstSurface)
   {
     D3D9DeviceLock lock = m_device->LockDevice();
     D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
@@ -327,18 +356,24 @@ public:
     UINT const halfWidth = desc.Width / 2;
     UINT const height = desc.Height;
 
-    RECT const leftRect = { 0, 0, static_cast<LONG>(halfWidth), static_cast<LONG>(height) };
-    RECT const rightRect = { static_cast<LONG>(halfWidth), 0, static_cast<LONG>(desc.Width), static_cast<LONG>(height) };
+    RECT const leftRect = {
+      0, 0, static_cast<LONG>(halfWidth), static_cast<LONG>(height)
+    };
+    RECT const rightRect = { static_cast<LONG>(halfWidth),
+                             0,
+                             static_cast<LONG>(desc.Width),
+                             static_cast<LONG>(height) };
 
-    m_device->StretchRectInternal(src, nullptr, dst, &leftRect, D3DTEXF_NONE, 0, 0);
-    m_device->StretchRectInternal(src, nullptr, dst, &rightRect, D3DTEXF_NONE, 1, 0);
+    m_device->StretchRectInternal(
+      src, nullptr, dst, &leftRect, D3DTEXF_NONE, 0, 0);
+    m_device->StretchRectInternal(
+      src, nullptr, dst, &rightRect, D3DTEXF_NONE, 1, 0);
 
     return D3D_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE
-  CopyLayers2TripleWide(IDirect3DSurface9* srcSurface,
-                              IDirect3DSurface9* dstSurface)
+  HRESULT STDMETHODCALLTYPE CopyLayers2TripleWide(IDirect3DSurface9* srcSurface,
+                                                  IDirect3DSurface9* dstSurface)
   {
     D3D9DeviceLock lock = m_device->LockDevice();
     D3D9Surface* src = static_cast<D3D9Surface*>(srcSurface);
@@ -346,24 +381,23 @@ public:
 
     D3DSURFACE_DESC desc;
     dstSurface->GetDesc(&desc);
+    // Currently, needs exact ...
     UINT const thirdWidth = desc.Width / 3;
     UINT const height = desc.Height;
-    
+
     RECT const leftRect = {
       0, 0, static_cast<LONG>(thirdWidth), static_cast<LONG>(height)
     };
 
-    RECT const middleRect = {
-      static_cast<LONG>(thirdWidth),
-      0,
-      static_cast<LONG>(2 * thirdWidth),
-      static_cast<LONG>(height) };
+    RECT const middleRect = { static_cast<LONG>(thirdWidth),
+                              0,
+                              static_cast<LONG>(2 * thirdWidth),
+                              static_cast<LONG>(height) };
 
-    RECT const rightRect = {
-      static_cast<LONG>(2 * thirdWidth),
-      0,
-      static_cast<LONG>(desc.Width),
-      static_cast<LONG>(height) };
+    RECT const rightRect = { static_cast<LONG>(2 * thirdWidth),
+                             0,
+                             static_cast<LONG>(desc.Width),
+                             static_cast<LONG>(height) };
 
     HRESULT hr = m_device->StretchRectInternal(
       src, nullptr, dst, &leftRect, D3DTEXF_NONE, 0, 0);
@@ -371,7 +405,6 @@ public:
       src, nullptr, dst, &middleRect, D3DTEXF_NONE, 1, 0);
     hr = m_device->StretchRectInternal(
       src, nullptr, dst, &rightRect, D3DTEXF_NONE, 2, 0);
-
 
     return D3D_OK;
   }
