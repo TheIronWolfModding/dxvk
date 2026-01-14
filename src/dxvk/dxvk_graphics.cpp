@@ -7,6 +7,8 @@
 #include "dxvk_pipemanager.h"
 #include "dxvk_state_cache.h"
 
+extern uint32_t g_multiviewMask;
+
 namespace dxvk {
 
   DxvkGraphicsPipelineVertexInputState::DxvkGraphicsPipelineVertexInputState() {
@@ -303,7 +305,7 @@ namespace dxvk {
     }
 
     if (vs && vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
-      rtInfo.viewMask = 0b111; // todo_tiw: what to do for VR?
+      rtInfo.viewMask = g_multiviewMask;
     }
 
     // Alpha to coverage is not supported with sample mask exports.

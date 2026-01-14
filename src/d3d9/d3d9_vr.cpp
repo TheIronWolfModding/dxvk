@@ -7,6 +7,8 @@
 
 #include "d3d9_device.h"
 
+extern uint32_t g_multiviewMask;
+
 namespace dxvk {
 
 class D3D9VR final : public ComObjectClamp<IDirect3DVR9>
@@ -407,6 +409,12 @@ public:
       src, nullptr, dst, &rightRect, D3DTEXF_NONE, 2, 0);
 
     return D3D_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE SetMultiViewMask(uint32_t mvMask)
+  {
+    g_multiviewMask = mvMask;
+    return S_OK;
   }
 
 private:

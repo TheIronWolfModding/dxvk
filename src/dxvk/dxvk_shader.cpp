@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+uint32_t g_multiviewMask = 0b11;
+
 namespace dxvk {
   
   bool DxvkShaderModuleCreateInfo::eq(const DxvkShaderModuleCreateInfo& other) const {
@@ -1238,7 +1240,7 @@ namespace dxvk {
 
     VkPipelineRenderingCreateInfo rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
     if (m_shaders.vs && m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
-        rtInfo.viewMask = 0b111;
+        rtInfo.viewMask = g_multiviewMask;
     }
 
     VkGraphicsPipelineLibraryCreateInfoEXT libInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT, &rtInfo };
@@ -1328,7 +1330,7 @@ namespace dxvk {
 
     VkPipelineRenderingCreateInfo rtInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
     if (m_shaders.vs && m_shaders.vs->flags().test(DxvkShaderFlag::UsesMultiView)) {
-        rtInfo.viewMask = 0b111;
+        rtInfo.viewMask = g_multiviewMask;
     }
 
     VkGraphicsPipelineLibraryCreateInfoEXT libInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT, &rtInfo };
