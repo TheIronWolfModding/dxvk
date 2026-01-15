@@ -216,6 +216,7 @@ if get_option('buildtype') == 'release'
     cc.get_supported_arguments(['-fomit-frame-pointer', '-finline-functions', '-ftree-vectorize']),
     language: 'c'
   )
+  add_project_arguments('-DNDEBUG', language : ['c', 'cpp'])
 endif
 
 subdir('src')
