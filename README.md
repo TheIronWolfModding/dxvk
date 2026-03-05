@@ -1,6 +1,6 @@
 # About this fork:
 
-This fork contains the following changes:
+This CCGEP/GTR2 focused fork contains the following changes compared to the mainline:
 * additional resource unmapping on top of what mainline has, virtually eliminating 32bit address space liminations in GTR2 (Rhedox, you're the best).
 * Multi View/Single Pass Stereo/Triple Screen by detegr (customized for GTR2).  This is absolute genius approach kindly shared by detegr and since RBR is an abandonware, ideas are open source, and you can follow that approach: https://github.com/Detegr/openRBRVR
 * allow DX9->Vulkan OpenVR/OpenXR (Initially based on Joshua Ashton's work).
