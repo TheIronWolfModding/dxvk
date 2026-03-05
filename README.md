@@ -1,12 +1,18 @@
 # About this fork:
 
 This fork contains the following changes:
-* GTR2 specific tweaks for higher framerate/image quality/resource usage.  Might be helpful for other gMotor based/derived DX9 games, but GTR2 is the sole focus of this fork so it is not guaranteed to work on other games.  Some differences vs main repo are marked with `GTR2_SPECIFIC` symbol.
-* additional resource unmapping.
-* allow DX9->Vulkan OpenVR/OpenXR (Initially based on Joshua Ashton's work).  Note: game side changes needed for VR to work, dropping this .dll into random game won't magically add Vulkan VR.
+* additional resource unmapping on top of what mainline has, virtually eliminating 32bit address space liminations in GTR2 (Rhedox, you're the best).
+* Multi View/Single Pass Stereo/Triple Screen by detegr (customized for GTR2).  This is absolute genius approach kindly shared by detegr and since RBR is an abandonware, ideas are open source, and you can follow that approach: https://github.com/Detegr/openRBRVR
+* allow DX9->Vulkan OpenVR/OpenXR (Initially based on Joshua Ashton's work).
+
+     -- NOTE: game side changes needed for VR/SPS/Triple Screen to work, dropping this .dll into random game **won't magically add Vulkan VR or enable Multi View** capabilities.
+
 * option to force SGSSAA-like AA.  It's brute force and I suspect can be done much smarter, by appliying sample shading only to *some* pipelines, I am not yet sure how - suggestions welcome!  Note: main DXVK branch added this as well recently, but this fork has additional experimental setting: `dxvk.forceSampleRateShadingFactor`
 * option to force 32bit float depth buffer.
 * preserved `d3d9.enableDialogMode` setting deprecated in the mainline as it is tiny bit faster in GTR2 when disabled.
+* preserve `dxvk.conf` options removed since 2.4.1, such as MSAA forcing.
+* GTR2 specific tweaks for higher framerate/image quality/resource usage.  Might be helpful for other gMotor based/derived DX9 games, but GTR2 is the sole focus of this fork, so it is not guaranteed to work on other games.  Some differences vs main repo are marked with `GTR2_SPECIFIC` symbol.
+
 
 I am not submitting my stuff to the main repo because I am not exactly a graphics guru and I doubt anyone needs my hacks there (at least no one expressed interest).  That said, if this is useful to anyone, I would greatly appreciate hints and suggestions, especially on how to minimize GPU idle time in VR and applying sample shading AA smarter.  Also, any ideas for further DX9 gMotor specific tweaks are welcome.
 
@@ -14,8 +20,8 @@ Follow updates to this fork here: https://thecrewchief.org/showthread.php?2012-C
 Old versions are linked in CCGEP Manual's *Downloads and Resources* section.
 
 ## Branches:
-* Latest Vulkan 1.3: vr-dx9-rel-110423
-* Vulkan 1.2: vr-dx9-rel-042322 - Please do not report issues on this version.
+* Latest Vulkan 1.3, (2.4.1 based as it seems to perform best): tiw-rel-241-260110
+* Vulkan 1.2: vr-dx9-rel-042322 - does not contain all the features.
 
 # DXVK
 
