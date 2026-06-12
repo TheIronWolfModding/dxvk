@@ -4356,6 +4356,7 @@ namespace dxvk {
     DxvkDeviceFeatures enabled = {};
 
     enabled.vk11.multiview = supported.vk11.multiview;
+    enabled.vk11.variablePointersStorageBuffer = supported.vk11.variablePointersStorageBuffer;
     enabled.vk11.variablePointers = supported.vk11.variablePointers;
 
     // Geometry shaders are used for some meta ops
