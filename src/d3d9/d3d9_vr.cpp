@@ -44,11 +44,11 @@ public:
 
     D3D9Surface* surface = static_cast<D3D9Surface*>(pSurface);
 
-    const auto* tex = surface->GetCommonTexture();
+    auto const* tex = surface->GetCommonTexture();
 
-    const auto& desc = tex->Desc();
-    const auto& image = tex->GetImage();
-    const auto& device = tex->Device()->GetDXVKDevice();
+    auto const& desc = tex->Desc();
+    auto const& image = tex->GetImage();
+    auto const& device = tex->Device()->GetDXVKDevice();
 
     // I don't know why the image randomly is a uint64_t in OpenVR.
     pDesc->Image = uint64_t(image->handle());
@@ -72,7 +72,7 @@ public:
       return D3DERR_INVALIDCALL;
 
     auto* tex = static_cast<D3D9Surface*>(pSurface)->GetCommonTexture();
-    const auto& image = tex->GetImage();
+    auto const& image = tex->GetImage();
 
     VkImageSubresourceRange subresources = { VK_IMAGE_ASPECT_COLOR_BIT,
                                              0,
@@ -84,6 +84,8 @@ public:
                              &subresources,
                              image->info().layout,
                              VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+    m_vrTransferredTextures.push_back(tex);
 
     return D3D_OK;
   }
@@ -134,6 +136,22 @@ public:
   {
     m_device->GetDXVKDevice()->unlockSubmission();
 
+    // Transition images back from TRANSFER_SRC to their original layout.
+    // This fixes VUID-vkCmdDraw-None-09600.
+    for (auto tex : m_vrTransferredTextures) {
+      auto const& image = tex->GetImage();
+      VkImageSubresourceRange subresources = { VK_IMAGE_ASPECT_COLOR_BIT,
+                                               0,
+                                               image->info().mipLevels,
+                                               0,
+                                               image->info().numLayers };
+      m_device->TransformImage(tex,
+                               &subresources,
+                               VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                               image->info().layout);
+    }
+    m_vrTransferredTextures.clear();
+
     return D3D_OK;
   }
 
@@ -162,7 +180,7 @@ public:
     D3D9CommonShader const* common = shader->GetCommonShader();
     Rc<DxvkShader> dxvkShader = common->GetShader();
 
-    const auto shaderKey = dxvkShader->getShaderKey().toString();
+    auto const shaderKey = dxvkShader->getShaderKey().toString();
     ::memcpy(out, shaderKey.c_str(), shaderKey.size());
 
     return D3D_OK;
@@ -420,6 +438,7 @@ public:
 private:
   D3D9DeviceEx* m_device;
   D3D9DeviceLock m_lock;
+  std::vector<D3D9CommonTexture*> m_vrTransferredTextures;
 };
 
 }
