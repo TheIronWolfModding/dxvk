@@ -4,6 +4,10 @@ alias brf32='cd /root/mnt/dxvk/ && rm -rf bld.w32 && meson setup --cross-file "b
 alias w32='cd /root/mnt/dxvk/bld.w32'
 alias br32='cd /root/mnt/dxvk/bld.w32 && ninja install && cp /root/mnt/dxvk/bld.w32/out/bin/d3d9.dll /root/mnt/dxvk/bld.w32/out/bin/d3d9_dxvk.dll'
 
+alias brfz32='cd /root/mnt/dxvk/ && rm -rf bld.w32z && meson setup --cross-file "build-win32-zen5.txt" --buildtype "release" --strip --prefix /root/mnt/dxvk/bld.w32z/out/ bld.w32z && cd bld.w32z && ninja install && cp /root/mnt/dxvk/bld.w32z/out/bin/d3d9.dll /root/mnt/dxvk/bld.w32z/out/bin/d3d9_dxvk.dll'
+alias wz32='cd /root/mnt/dxvk/bld.w32z'
+alias brz32='cd /root/mnt/dxvk/bld.w32z && ninja install && cp /root/mnt/dxvk/bld.w32z/out/bin/d3d9.dll /root/mnt/dxvk/bld.w32z/out/bin/d3d9_dxvk.dll'
+
 alias bdf32='cd /root/mnt/dxvk/ && rm -rf bld.w32d && meson setup --cross-file "build-win32.txt" --buildtype "debug" --dev-build --prefix /root/mnt/dxvk/bld.w32d/out/ bld.w32d && cd bld.w32d && ninja install && cp /root/mnt/dxvk/bld.w32d/out/bin/d3d9.dll /root/mnt/dxvk/bld.w32d/out/bin/d3d9_dxvk.dll'
 alias w32d='cd /root/mnt/dxvk/bld.w32d'
 alias bd32='cd /root/mnt/dxvk/bld.w32d && ninja install && cp /root/mnt/dxvk/bld.w32d/out/bin/d3d9.dll /root/mnt/dxvk/bld.w32d/out/bin/d3d9_dxvk.dll'
